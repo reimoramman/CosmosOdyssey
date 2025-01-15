@@ -1,0 +1,1 @@
+The biggest hurdle has been the building of the database using .NET following multiple guides and stack overflows I kept getting the error build failed. ![image](https://github.com/user-attachments/assets/7878f75b-f7c3-4546-bfeb-8e8e06da32c9)
