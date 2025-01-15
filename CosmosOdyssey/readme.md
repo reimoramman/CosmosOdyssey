@@ -8,6 +8,7 @@ Then I made a plan on how to mnanage the data for the project and came up with t
 ![image](https://github.com/user-attachments/assets/b8e52341-2126-403b-9c0e-a304414e1c52)
 
 The biggest hurdle has been the building of the database using .NET following multiple guides and stack overflows I kept getting the error build failed.
+
 ![image](https://github.com/user-attachments/assets/7878f75b-f7c3-4546-bfeb-8e8e06da32c9)
 
 After many attempts and hours I desided to make the FE first. The design was simple but somewhat elegant. Adleast Id like to think so myself. But the 
