@@ -14,3 +14,9 @@ The biggest hurdle has been the building of the database using .NET following mu
 After many attempts and hours I desided to make the FE first. The design was simple but somewhat elegant. Adleast Id like to think so myself. But the 
 main idea was to have it be nice looking on all devices wiht all kinds of resolutions. After I felt satisfied I went back to BE to try to figure out 
 what is wrong and why I can not build the database using .NET
+
+After plenty googleing I found a solution for the Build Faield error wich was to rebuild solution button under tools in Visual Code. But after that a
+new problem arose but it was progress so i was happy. But after plantyful hours of attempts and stack overflow guides I was still unable to figure out the problem show below
+
+![image](https://github.com/user-attachments/assets/02ee5efc-c262-4ef6-a2b8-f40f56f137ed)
+
