@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Routes.API.Data;
-using Routes.API.Models.Entities;
+using TravelRoutes.API.Models.Entities;
 
 
 namespace Proovitoo.Controllers
@@ -40,18 +40,18 @@ namespace Proovitoo.Controllers
             return Ok(route);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AddRoute(Routes.API.Models.Entities.Route route)
+        /*[HttpPost]
+        public async Task<IActionResult> AddRoute(TravelRoute route)
         {
             route.Id = Guid.NewGuid();
             await routesDbContext.Routes.AddAsync(route);
             await routesDbContext.SaveChangesAsync();
             return CreatedAtAction(nameof(GetRouteById), new { id = route.Id }, route);
-        }
+        }*/
 
         [HttpPut]
         [Route("{id:Guid}")]
-        public async Task<IActionResult> UpdateRoute([FromRoute] Guid id, [FromBody] Routes.API.Models.Entities.Route updatedRoute)
+        public async Task<IActionResult> UpdateRoute([FromRoute] Guid id, [FromBody] TravelRoute updatedRoute)
         {
             var existingRoute = await routesDbContext.Routes.FindAsync(id);
 
@@ -62,9 +62,9 @@ namespace Proovitoo.Controllers
 
             existingRoute.Origin = updatedRoute.Origin;
             existingRoute.Destination = updatedRoute.Destination;
-            existingRoute.CompanyName = updatedRoute.CompanyName;
-            existingRoute.Price = updatedRoute.Price;
-            existingRoute.TravelTime = updatedRoute.TravelTime;
+            // existingRoute.CompanyName = updatedRoute.CompanyName;  // Moved CompanyName from route to priceList
+            // existingRoute.Price = updatedRoute.Price;  // Moved to priceList
+            // existingRoute.TravelTime = updatedRoute.TravelTime; // Moved to PriceList and separated into startDate and endDate
 
             await routesDbContext.SaveChangesAsync();
             return Ok(existingRoute);
