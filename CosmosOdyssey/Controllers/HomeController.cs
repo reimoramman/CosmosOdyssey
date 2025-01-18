@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Routes.API.Data;
-using Routes.APi.Models.Entities;
+using Routes.API.Models.Entities;
 
 
 namespace Proovitoo.Controllers
@@ -41,7 +41,7 @@ namespace Proovitoo.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddRoute(Routes.APi.Models.Entities.Route route)
+        public async Task<IActionResult> AddRoute(Routes.API.Models.Entities.Route route)
         {
             route.Id = Guid.NewGuid();
             await routesDbContext.Routes.AddAsync(route);
@@ -51,7 +51,7 @@ namespace Proovitoo.Controllers
 
         [HttpPut]
         [Route("{id:Guid}")]
-        public async Task<IActionResult> UpdateRoute([FromRoute] Guid id, [FromBody] Routes.APi.Models.Entities.Route updatedRoute)
+        public async Task<IActionResult> UpdateRoute([FromRoute] Guid id, [FromBody] Routes.API.Models.Entities.Route updatedRoute)
         {
             var existingRoute = await routesDbContext.Routes.FindAsync(id);
 

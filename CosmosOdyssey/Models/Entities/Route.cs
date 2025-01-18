@@ -1,4 +1,4 @@
-﻿namespace Routes.APi.Models.Entities
+﻿namespace Routes.API.Models.Entities
 {
     public class Route
     {
