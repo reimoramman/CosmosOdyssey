@@ -1,0 +1,199 @@
+Body{
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0; /* Remove conflicting padding here */
+    color: #fff;
+    background: url('https://wallpapercave.com/wp/wBy77TR.jpg') center/cover no-repeat fixed;
+    box-sizing: border-box;
+}
+
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px 50px;
+    background-color: #fff;
+    background: linear-gradient(to bottom, #fff, rgba(255, 255, 255, 0.95));
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+.logo{
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #30307c; 
+    text-transform: uppercase; 
+    user-select: none;
+}
+
+.logo img{
+    width: 150px;
+    height: auto;
+}
+
+.navigation a {
+    font-size: 1.1rem;
+    color: #30307c;
+    text-decoration: none;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 40px;
+}
+
+.title{
+    text-align: center;
+    margin-top: 100px;
+}
+
+.container{
+    max-width: 480px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: white;
+    color: #30307c;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; 
+}
+
+.container:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block; 
+}
+
+form select{
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #f8f8f8;
+    color: #30307c;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+form select:focus {
+    border-color: #007bff; 
+    outline: none; 
+    background-color: #e9f7ff; 
+}
+
+button {
+    padding: 6px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px; 
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+button:active {
+    background-color: #004085;
+}
+
+.seperation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+#routes{
+    margin-top: 30px;
+    text-align: center;
+}
+
+#routes h2 {
+    font-size: 1.5rem; 
+    color: #fff;
+    margin-bottom: 20px; 
+}
+
+#routeList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#routeList li {
+    font-size: 1.1rem;
+    color: #fff;
+    margin: 10px 0; 
+}
+
+.info {
+    max-width: 480px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: white;
+    color: #30307c;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.info a {
+    text-decoration: none;
+    color: #30307c;
+    padding: 5px 10px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.info a:hover {
+    color: white;
+    background-color: #30307c;
+    border-color: #30307c;
+}
+
+.contact{
+    max-width: 460px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: rgb(250, 250, 250);
+    color: #30307c;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        padding: 10px 20px;
+    }
+
+    .logo {
+        margin-bottom: 10px;
+    }
+
+    .navigatoion{
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+}

@@ -15,6 +15,9 @@ namespace Proovitoo.Controllers
         {
             this.routesDbContext = routesDbContext;
         }
+
+        // TODO: add pricelist methods, and (reservation methods)?
+
         [HttpGet]
         public async Task<IActionResult> GetAllRoutes()
         {
