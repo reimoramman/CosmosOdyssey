@@ -40,14 +40,14 @@ namespace Proovitoo.Controllers
             return Ok(route);
         }
 
-        /*[HttpPost]
+        [HttpPost]
         public async Task<IActionResult> AddRoute(TravelRoute route)
         {
             route.Id = Guid.NewGuid();
             await routesDbContext.Routes.AddAsync(route);
             await routesDbContext.SaveChangesAsync();
             return CreatedAtAction(nameof(GetRouteById), new { id = route.Id }, route);
-        }*/
+        }
 
         [HttpPut]
         [Route("{id:Guid}")]
@@ -63,8 +63,8 @@ namespace Proovitoo.Controllers
             existingRoute.Origin = updatedRoute.Origin;
             existingRoute.Destination = updatedRoute.Destination;
             // existingRoute.CompanyName = updatedRoute.CompanyName;  // Moved CompanyName from route to priceList
-            // existingRoute.Price = updatedRoute.Price;  // Moved to priceList
-            // existingRoute.TravelTime = updatedRoute.TravelTime; // Moved to PriceList and separated into startDate and endDate
+            // existingRoute.Price = updatedRoute.Price;              // Moved to priceList
+            // existingRoute.TravelTime = updatedRoute.TravelTime;    // Moved to PriceList and separated into startDate and endDate
 
             await routesDbContext.SaveChangesAsync();
             return Ok(existingRoute);
