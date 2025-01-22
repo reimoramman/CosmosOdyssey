@@ -21,3 +21,11 @@ fetch('https://localhost:7066/api/Routes', {
     .then(data => data.json())
     .then(response => console.log(response));
 
+fetch('https://localhost:7066/api/pricelist', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+})
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error('Error:', error));
+console.log('pricelist 1');

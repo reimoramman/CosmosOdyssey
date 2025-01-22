@@ -87,7 +87,7 @@ namespace Proovitoo.Controllers
             return Ok();
         }
     }
-    public class PriceListController : Controller
+    /*public class PriceListController : Controller
     {
         private readonly RoutesDbContext routesDbContext;
         public PriceListController(RoutesDbContext routesDbContext)
@@ -163,9 +163,9 @@ namespace Proovitoo.Controllers
 
             return Ok();
         }
-    }
+    }*/
 
-    public class ReservationController : Controller
+   /* public class ReservationController : Controller
     {
         private readonly RoutesDbContext routesDbContext;
         public ReservationController(RoutesDbContext routesDbContext)
@@ -241,5 +241,5 @@ namespace Proovitoo.Controllers
 
             return Ok();
         }
-    }
+    }*/
 }
