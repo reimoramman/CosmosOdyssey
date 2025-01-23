@@ -1,4 +1,4 @@
-// V6imalikud teekonnad
+/*// V6imalikud teekonnad
 const routes = {
     Mercury: ["Venus"],
     Venus: ["Mercury", "Earth"],
@@ -46,4 +46,4 @@ const routes = {
     } else {
       alert("Please select both origin and destination.");
     }
-  });
+  });*/
