@@ -43,6 +43,25 @@ namespace Proovitoo.Controllers
             return Ok(route);
         }
 
+        [HttpGet]
+        [Route("{FromTo}")]
+        [ActionName("GetRouteById")]
+        public async Task<IActionResult> GetRoutByTravel([FromRoute] String fromTo)
+        {
+            var fromToSplit = fromTo.Split("-");  // Origin-Destination
+            var routeFrom = fromToSplit[0];
+            var routeTo = fromToSplit[1];
+            var route = routesDbContext.Routes.Where((o => o.Origin == routeFrom &&
+                                o.Destination == routeTo));
+
+            if (route == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(route);
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddRoute(TravelRoute route)
         {
@@ -87,159 +106,4 @@ namespace Proovitoo.Controllers
             return Ok();
         }
     }
-    /*public class PriceListController : Controller
-    {
-        private readonly RoutesDbContext routesDbContext;
-        public PriceListController(RoutesDbContext routesDbContext)
-        {
-            this.routesDbContext = routesDbContext;
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAllPricelist()
-        {
-            return Ok(await routesDbContext.PriceList.ToListAsync());
-        }
-
-        [HttpGet]
-        [Route("{id:Guid}")]
-        [ActionName("GetPriceListById")]
-        public async Task<IActionResult> GetPriceListById([FromRoute] Guid id)
-        {
-
-            var pricelist = await routesDbContext.PriceList.FindAsync(id);
-
-            if (pricelist == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(pricelist);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> AddPriceList(PriceList pricelist)
-        {
-            pricelist.Id = Guid.NewGuid();
-            await routesDbContext.PriceList.AddAsync(pricelist);
-            await routesDbContext.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetPriceListById), new { id = pricelist.Id }, pricelist);
-        }
-
-        [HttpPut]
-        [Route("{id:Guid}")]
-        public async Task<IActionResult> UpdatePriceList([FromRoute] Guid id, [FromBody] PriceList updatedPriceList)
-        {
-            var existingPriceList = await routesDbContext.PriceList.FindAsync(id);
-
-            if (existingPriceList == null)
-            {
-                return NotFound();
-            }
-
-            existingPriceList.Price = updatedPriceList.Price;
-            existingPriceList.CompanyName = updatedPriceList.CompanyName;
-            existingPriceList.StartTime = updatedPriceList.StartTime;
-            existingPriceList.EndTime = updatedPriceList.EndTime;
-            existingPriceList.ValidUntil = updatedPriceList.ValidUntil;
-
-            await routesDbContext.SaveChangesAsync();
-            return Ok(existingPriceList);
-        }
-
-        [HttpDelete]
-        [Route("{id:Guid}")]
-        public async Task<IActionResult> DeletePriceList([FromRoute] Guid id)
-        {
-            var existingPriceList = await routesDbContext.PriceList.FindAsync(id);
-
-            if (existingPriceList == null)
-            {
-                return NotFound();
-            }
-
-            routesDbContext.PriceList.Remove(existingPriceList);
-            await routesDbContext.SaveChangesAsync();
-
-            return Ok();
-        }
-    }*/
-
-   /* public class ReservationController : Controller
-    {
-        private readonly RoutesDbContext routesDbContext;
-        public ReservationController(RoutesDbContext routesDbContext)
-        {
-            this.routesDbContext = routesDbContext;
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAllReservations()
-        {
-            return Ok(await routesDbContext.Reservations.ToListAsync());
-        }
-
-        [HttpGet]
-        [Route("{id:Guid}")]
-        [ActionName("GetReservationById")]
-        public async Task<IActionResult> GetReservationById([FromRoute] Guid id)
-        {
-
-            var reservation = await routesDbContext.Reservations.FindAsync(id);
-
-            if (reservation == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(reservation);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> AddReservation(Reservation reservation)
-        {
-            reservation.Id = Guid.NewGuid();
-            await routesDbContext.Reservations.AddAsync(reservation);
-            await routesDbContext.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetReservationById), new { id = reservation.Id }, reservation);
-        }
-
-        [HttpPut]
-        [Route("{id:Guid}")]
-        public async Task<IActionResult> UpdateReservation([FromRoute] Guid id, [FromBody] Reservation updatedReservation)
-        {
-            var existingReservation = await routesDbContext.Reservations.FindAsync(id);
-
-            if (existingReservation == null)
-            {
-                return NotFound();
-            }
-
-            existingReservation.FirstName = updatedReservation.FirstName;
-            existingReservation.LastName = updatedReservation.LastName;
-            existingReservation.TotalPrice = updatedReservation.TotalPrice;
-            existingReservation.TotalTravelTime = updatedReservation.TotalTravelTime;
-            existingReservation.CreatedAt = updatedReservation.CreatedAt;
-
-            await routesDbContext.SaveChangesAsync();
-            return Ok(existingReservation);
-        }
-
-        [HttpDelete]
-        [Route("{id:Guid}")]
-        public async Task<IActionResult> DeleteReservation([FromRoute] Guid id)
-        {
-            var existingReservation = await routesDbContext.Reservations.FindAsync(id);
-
-            if (existingReservation == null)
-            {
-                return NotFound();
-            }
-
-            routesDbContext.Reservations.Remove(existingReservation);
-            await routesDbContext.SaveChangesAsync();
-
-            return Ok();
-        }
-    }*/
 }

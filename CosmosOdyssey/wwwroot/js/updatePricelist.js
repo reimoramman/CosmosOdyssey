@@ -1,40 +1,156 @@
 ﻿
+const APIURL = 'https://localhost:7066/api'
 
-document.getElementById("testButton").addEventListener("click", function () {
-
-    console.log('help me');
-
-    fetch('https://localhost:7066/api/Routes', {
-        method: 'GET',
-        header: { 'Content-Type': 'application/json' }
-    })
-    .then(data => data.json())
-    .then(response => console.log(response));
-});
 
 // Update to take PriceList data instead. From price list data, can get routes also
 // Can not get price from route
-fetch('https://localhost:7066/api/Routes', {
+fetch(`${APIURL}/Routes`, {
     method: 'GET',
     header: { 'Content-Type': 'application/json' }
 })
     .then(data => data.json())
     .then(response => console.log(response));
 
-fetch('https://localhost:7066/api/pricelist', {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' }
-})
-    .then(response => response.json())
-    .then(data => console.log(data))
-    .catch(error => console.error('Error:', error));
-console.log('pricelist 1');
+// Fetch pricelist for Find Routes
+function getHistoricPriceList() {
+    fetch(`${APIURL}/pricelist`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+    })
+        .then(response => response.json())
+        .then(data => console.log('Pricelist', data))
+        .catch(error => console.error('Error:', error));
+}
+
+// Get PriceList from TravelPrices API
+function getNewPriceList() {
+    fetch('https://cosmosodyssey.azurewebsites.net/api/v1.0/TravelPrices', {
+        method: 'GET',
+        header: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        }
+    })
+        .then(data => data.json())
+        .then(function (output) {return output });
+}
+
+// Get price data from JSON file (Static data)
+async function getMockPriceList() {
+    const response = await fetch('./TravelPrices.json');
+    tempData = await response.json();
+    return tempData;
+}
+
+async function getRouteByTravel(origin, destination) {
+    const response = await fetch(`${APIURL}/Routes/${origin}-${destination}`);
+    tempData = await response.json();
+    return tempData;
+}
+
+async function createNewRoute(origin, destination) {
+    const response = await fetch(`${APIURL}/Routes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'accept': '*/*' },
+        body: JSON.stringify({'origin': origin, 'destination': destination})
+    })
+    tempData = await response.json();
+    return tempData;
+}
+
+// TODO: Create function to save priceListData, similar to createNewRoute()
+async function saveToPriceList(pricelist) {
+    return  //TODO: Finish me
+}
+
+//Save JSON PriceList data to DB
+async function saveJsonToDb() {
+    let data = await getMockPriceList();
+    let validUntil = data.validUntil;
+
+    data.legs.forEach(async function (leg) {
+        let legFrom = leg.routeInfo.from.name;
+        let legTo = leg.routeInfo.to.name;
+
+        let travelRoute = await getRouteByTravel(legFrom, legTo);
+        let routeId = null
+        if (travelRoute.length == 0) {
+            let newRoute = await createNewRoute(legFrom, legTo);
+            routeId = newRoute.id
+        }
+        else {
+            routeId = travelRoute[0].id
+        }
+
+        leg.providers.forEach(function (provider) {
+            let companyName = provider.company.name
+            let flightEnd = provider.flightEnd
+            let flightStart = provider.flightStart
+            let price = provider.price
+
+            let priceData = {
+                "validUntil": validUntil,
+                "price": price,
+                "companyName": companyName,
+                "startTime": flightStart,
+                "endTime": flightEnd,
+                "travelRouteId": routeId
+            }
+            saveToPriceList(priceData);
+            console.log('PRICE DATA:', priceData)  // TODO: Save to priceList db. Routes are already saved
+        })
+    })
+
+    //let jsonData = getMockPriceList();
+    /*{
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "price": 0,
+        "companyName": "string",
+        "startTime": "2025-01-26T11:00:51.205Z",
+        "endTime": "2025-01-26T11:00:51.205Z",
+        "validUntil": "2025-01-26T11:00:51.205Z",
+        "travelRouteId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "travelRoutes": {
+            "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "origin": "string",
+            "destination": "string",
+            "priceLists": [
+                "string"
+            ]
+        },
+        "priceReservationId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    }*/
+}
+
+// Get Current priceList from Db, if not expired, otherwise get from API
+async function getCurrentPriceList() {
+    let historicPricelist = await getHistoricPriceList();
+
+    if (!historicPricelist || historicPricelist.length === 0) {
+        return getNewPriceList();
+        // TODO: Save new pricelist to database
+    }
+
+    // TODO: Remove expired priceList elements
+    // TODO? Replace with an endpoint that filters out expired priceList elements
+    let filteredHistoricPricelist = historicPricelist.filter(a => new Date(a.ValidUntil) > new Date());
+
+    if (filteredHistoricPricelist.length === 0) {
+        return getNewPriceList();
+        // TODO: Save new pricelist to database
+    }
+
+    // TODO: Format priceList from API to be similar to db format
+    return filteredHistoricPricelist;
+}
 
 
-// Populate dropdown attempt1 
+// Populate dropdown
 document.addEventListener("DOMContentLoaded", function () {
     const originSelect = document.getElementById("origin");
     const destinationSelect = document.getElementById("destination");
+
+    saveJsonToDb()
 
     // Function to populate dropdowns
     function populateDropdown(selectElement, options) {
@@ -79,8 +195,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!selectedOrigin || !selectedDestination) {
             alert("Please select both origin and destination!");
             return;
-            console.log("button1")
         }
     });
+
+    // console.log('PriceListOutput', getCurrentPriceList())
 });
 
