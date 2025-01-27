@@ -52,15 +52,25 @@ async function createNewRoute(origin, destination) {
     const response = await fetch(`${APIURL}/Routes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'accept': '*/*' },
-        body: JSON.stringify({'origin': origin, 'destination': destination})
-    })
+        body: JSON.stringify({ 'origin': origin, 'destination': destination })
+    });
     tempData = await response.json();
     return tempData;
 }
 
 // TODO: Create function to save priceListData, similar to createNewRoute()
 async function saveToPriceList(pricelist) {
-    return  //TODO: Finish me
+    const response = await fetch('${APIURL}/PriceList', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', accept: '*/*' },
+        body: JSON.stringify({ 'pricelist': pricelist })
+    });
+
+    if (!response.ok) {
+        throw Error('Failed to save price list');
+    }
+    temptData = await response.json();
+    return temptData;
 }
 
 //Save JSON PriceList data to DB
@@ -74,6 +84,7 @@ async function saveJsonToDb() {
 
         let travelRoute = await getRouteByTravel(legFrom, legTo);
         let routeId = null
+
         if (travelRoute.length == 0) {
             let newRoute = await createNewRoute(legFrom, legTo);
             routeId = newRoute.id
@@ -95,11 +106,33 @@ async function saveJsonToDb() {
                 "startTime": flightStart,
                 "endTime": flightEnd,
                 "travelRouteId": routeId
-            }
-            saveToPriceList(priceData);
-            console.log('PRICE DATA:', priceData)  // TODO: Save to priceList db. Routes are already saved
+            };
+
+            /*try {
+                *//*await*//* saveToPriceList(priceData);
+                console.log('Saved PRICE DATA:', priceData);
+            } catch (error) {
+                console.log('Error saving to PriceList:', error);
+            }*/
+          // saveToPriceList(priceData);
+           console.log('PRICE DATA:', priceData)  // TODO: Save to priceList db. Routes are already saved
         })
     })
+
+
+    //  Function to format price list data
+    /*function formatPriceListData(apiData) {
+        return apiData.legs.flatMap(leg =>
+            leg.providers.map(provider => ({
+                validUntil: apiData.validUntil,
+                price: provider.price,
+                companyName: provider.company.name,
+                startTime: provider.flightStart,
+                endTime: provider.flightEnd,
+                travelRouteId: leg.routeInfo.id
+            }))
+        )
+    }*/
 
     //let jsonData = getMockPriceList();
     /*{
@@ -127,16 +160,22 @@ async function getCurrentPriceList() {
     let historicPricelist = await getHistoricPriceList();
 
     if (!historicPricelist || historicPricelist.length === 0) {
-        return getNewPriceList();
+        let newPriceList = await getNewPriceList();
+        await saveToPriceList(mewPriceList);
+        return newPriceList
+        //return getNewPriceList();
         // TODO: Save new pricelist to database
     }
 
     // TODO: Remove expired priceList elements
+    let currentDate = new Date();
     // TODO? Replace with an endpoint that filters out expired priceList elements
-    let filteredHistoricPricelist = historicPricelist.filter(a => new Date(a.ValidUntil) > new Date());
+    let filteredHistoricPricelist = historicPricelist.filter(a => new Date(a.ValidUntil) > currentDate);
 
     if (filteredHistoricPricelist.length === 0) {
-        return getNewPriceList();
+        let newPriceList = await getNewPriceList();
+        await saveToPriceList(newPriceList);
+        return newPriceList
         // TODO: Save new pricelist to database
     }
 
