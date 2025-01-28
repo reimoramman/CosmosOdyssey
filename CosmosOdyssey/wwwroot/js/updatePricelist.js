@@ -1,5 +1,4 @@
-﻿
-const APIURL = 'https://localhost:7066/api'
+﻿const APIURL = 'https://localhost:7066/api'
 
 
 // Update to take PriceList data instead. From price list data, can get routes also
@@ -32,7 +31,7 @@ function getNewPriceList() {
         }
     })
         .then(data => data.json())
-        .then(function (output) {return output });
+        .then(function (output) { return output });
 }
 
 // Get price data from JSON file (Static data)
@@ -53,7 +52,7 @@ async function createNewRoute(origin, destination) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'accept': '*/*' },
         body: JSON.stringify({ 'origin': origin, 'destination': destination })
-    });
+    })
     tempData = await response.json();
     return tempData;
 }
@@ -84,7 +83,6 @@ async function saveJsonToDb() {
 
         let travelRoute = await getRouteByTravel(legFrom, legTo);
         let routeId = null
-
         if (travelRoute.length == 0) {
             let newRoute = await createNewRoute(legFrom, legTo);
             routeId = newRoute.id
@@ -106,33 +104,11 @@ async function saveJsonToDb() {
                 "startTime": flightStart,
                 "endTime": flightEnd,
                 "travelRouteId": routeId
-            };
-
-            /*try {
-                *//*await*//* saveToPriceList(priceData);
-                console.log('Saved PRICE DATA:', priceData);
-            } catch (error) {
-                console.log('Error saving to PriceList:', error);
-            }*/
-          // saveToPriceList(priceData);
-           console.log('PRICE DATA:', priceData)  // TODO: Save to priceList db. Routes are already saved
+            }
+            saveToPriceList(priceData);
+            console.log('PRICE DATA:', priceData)  // TODO: Save to priceList db. Routes are already saved
         })
     })
-
-
-    //  Function to format price list data
-    /*function formatPriceListData(apiData) {
-        return apiData.legs.flatMap(leg =>
-            leg.providers.map(provider => ({
-                validUntil: apiData.validUntil,
-                price: provider.price,
-                companyName: provider.company.name,
-                startTime: provider.flightStart,
-                endTime: provider.flightEnd,
-                travelRouteId: leg.routeInfo.id
-            }))
-        )
-    }*/
 
     //let jsonData = getMockPriceList();
     /*{
@@ -160,28 +136,43 @@ async function getCurrentPriceList() {
     let historicPricelist = await getHistoricPriceList();
 
     if (!historicPricelist || historicPricelist.length === 0) {
-        let newPriceList = await getNewPriceList();
-        await saveToPriceList(mewPriceList);
-        return newPriceList
-        //return getNewPriceList();
+        return getNewPriceList();
         // TODO: Save new pricelist to database
     }
 
     // TODO: Remove expired priceList elements
-    let currentDate = new Date();
     // TODO? Replace with an endpoint that filters out expired priceList elements
-    let filteredHistoricPricelist = historicPricelist.filter(a => new Date(a.ValidUntil) > currentDate);
+    let filteredHistoricPricelist = historicPricelist.filter(a => new Date(a.ValidUntil) > new Date());
 
     if (filteredHistoricPricelist.length === 0) {
-        let newPriceList = await getNewPriceList();
-        await saveToPriceList(newPriceList);
-        return newPriceList
+        return getNewPriceList();
         // TODO: Save new pricelist to database
     }
 
     // TODO: Format priceList from API to be similar to db format
     return filteredHistoricPricelist;
 }
+//FlatMap
+/*const arr1 = [1, 2, 1];
+
+const result = arr1.flatMap((num) => (num === 2 ? [2, 2] : 1));
+
+console.log(result);
+Expected output: Array[1, 2, 2, 1]*/
+
+/*function formatPriceListData(apiData) {
+    return apiData.legs.flatMap(leg =>
+        leg.providers.map(provider => ({
+            validUntil: apiData.validUntil,
+            price: provider.price,
+            companyName: provider.companyName.name,
+            startTime: provider.flightStart,
+            endTime: provider.flightEnd,
+            travelRouteId: leg.routeInfo.id
+
+        }))
+    );
+}*/
 
 
 // Populate dropdown
@@ -239,4 +230,3 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // console.log('PriceListOutput', getCurrentPriceList())
 });
-
