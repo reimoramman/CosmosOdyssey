@@ -12,9 +12,5 @@ namespace Reservations.API.Models.Entities
         public TimeSpan TotalTravelTime { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        // Relation with PriceList
-        // public int PriceListId { get; set; }
-        public List<PriceList> PriceList { get; }
-
     }
 }

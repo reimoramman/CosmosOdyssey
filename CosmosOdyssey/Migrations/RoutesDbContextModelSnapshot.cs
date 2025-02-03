@@ -22,21 +22,6 @@ namespace CosmosOdyssey.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("PriceListReservation", b =>
-                {
-                    b.Property<Guid>("PriceListId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ReservationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("PriceListId", "ReservationId");
-
-                    b.HasIndex("ReservationId");
-
-                    b.ToTable("PriceListReservation");
-                });
-
             modelBuilder.Entity("PriceLists.API.Models.Entities.PriceList", b =>
                 {
                     b.Property<Guid>("Id")
@@ -44,7 +29,6 @@ namespace CosmosOdyssey.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CompanyName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("EndTime")
@@ -52,9 +36,6 @@ namespace CosmosOdyssey.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("PriceReservationId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
@@ -67,9 +48,24 @@ namespace CosmosOdyssey.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TravelRouteId");
-
                     b.ToTable("PriceList");
+                });
+
+            modelBuilder.Entity("PriceReservations.API.Models.Entities.PriceReservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PriceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ReservationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PriceReservation");
                 });
 
             modelBuilder.Entity("Reservations.API.Models.Entities.Reservation", b =>
@@ -117,37 +113,6 @@ namespace CosmosOdyssey.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Routes");
-                });
-
-            modelBuilder.Entity("PriceListReservation", b =>
-                {
-                    b.HasOne("PriceLists.API.Models.Entities.PriceList", null)
-                        .WithMany()
-                        .HasForeignKey("PriceListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Reservations.API.Models.Entities.Reservation", null)
-                        .WithMany()
-                        .HasForeignKey("ReservationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("PriceLists.API.Models.Entities.PriceList", b =>
-                {
-                    b.HasOne("TravelRoutes.API.Models.Entities.TravelRoute", "TravelRoutes")
-                        .WithMany("PriceLists")
-                        .HasForeignKey("TravelRouteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TravelRoutes");
-                });
-
-            modelBuilder.Entity("TravelRoutes.API.Models.Entities.TravelRoute", b =>
-                {
-                    b.Navigation("PriceLists");
                 });
 #pragma warning restore 612, 618
         }

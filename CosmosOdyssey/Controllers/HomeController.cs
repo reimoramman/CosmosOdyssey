@@ -45,14 +45,13 @@ namespace Proovitoo.Controllers
 
         [HttpGet]
         [Route("{FromTo}")]
-        [ActionName("GetRouteById")]
+        [ActionName("GetRouteByOriginAndDestination")]
         public async Task<IActionResult> GetRoutByTravel([FromRoute] String fromTo)
         {
             var fromToSplit = fromTo.Split("-");  // Origin-Destination
             var routeFrom = fromToSplit[0];
             var routeTo = fromToSplit[1];
-            var route = routesDbContext.Routes.Where((o => o.Origin == routeFrom &&
-                                o.Destination == routeTo));
+            var route = routesDbContext.Routes.Where(o => o.Origin == routeFrom && o.Destination == routeTo);
 
             if (route == null)
             {
