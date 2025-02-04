@@ -3,7 +3,7 @@ Body{
     margin: 0;
     padding: 0; /* Remove conflicting padding here */
     color: #fff;
-    background: url('https://wallpapercave.com/wp/wBy77TR.jpg') center/cover no-repeat fixed;
+    background: url('https://wallpapercave.com/wp/wBy77TR.jpg') center no-repeat fixed;
     box-sizing: border-box;
 }
 
@@ -154,6 +154,7 @@ button:active {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    text-align: center;
 }
 
 .info a {

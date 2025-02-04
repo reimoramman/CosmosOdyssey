@@ -149,8 +149,9 @@ async function getCurrentPriceList() {
 document.addEventListener("DOMContentLoaded", function () {
     const originSelect = document.getElementById("origin");
     const destinationSelect = document.getElementById("destination");
+    const findRoutes = document.getElementById("findRoutes"); // Ensure this exists in HTML
 
-    saveJsonToDb()
+    saveJsonToDb();
 
     // Function to populate dropdowns
     function populateDropdown(selectElement, options) {
@@ -175,17 +176,39 @@ document.addEventListener("DOMContentLoaded", function () {
             return response.json();
         })
         .then(data => {
-
             // Extract unique origins and destinations
-            const origins = [...new Set(data.map(route => route.origin))];
-            const destinations = [...new Set(data.map(route => route.destination))];
+            const uniqueOrigins = [...new Set(data.map(route => route.origin))];
+            const uniqueDestinations = [...new Set(data.map(route => route.destination))];
 
-            // Populate select elements
-            populateDropdown(originSelect, origins);
-            populateDropdown(destinationSelect, destinations);
+            // Populate origin and destination dropdowns
+            populateDropdown(originSelect, uniqueOrigins);
+            populateDropdown(destinationSelect, uniqueDestinations);
         })
         .catch(error => console.error('Error fetching route data:', error));
 
+    // TODO? Precent selecting the same origin as destinationn?
+    // Prevent selecting the same destination as origin
+    originSelect.addEventListener("change", function () {
+        const selectedOrigin = originSelect.value;
+
+        fetch(`${APIURL}/Routes`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                const availableDestinations = [...new Set(data.map(route => route.destination))];
+
+                // Filter out the selected origin from the destination list
+                const filteredDestinations = availableDestinations.filter(destination => destination !== selectedOrigin);
+
+                // Repopulate destination dropdown
+                populateDropdown(destinationSelect, filteredDestinations);
+            })
+            .catch(error => console.error('Error fetching filtered destinations:', error));
+    });
+
+    // Prevent selecting the same origin and destination when clicking "Find Routes"
     findRoutes.addEventListener("click", function () {
         const selectedOrigin = originSelect.value;
         const selectedDestination = destinationSelect.value;
@@ -194,8 +217,13 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Please select both origin and destination!");
             return;
         }
+
+
+        //Should prevention not work 
+        if (selectedOrigin === selectedDestination) {
+            alert("Origin and destination cannot be the same!");
+            destinationSelect.value = ""; // Reset destination selection
+            return;
+        }
     });
-
-    // console.log('PriceListOutput', getCurrentPriceList())
 });
-
