@@ -209,6 +209,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Prevent selecting the same origin and destination when clicking "Find Routes"
+
     findRoutes.addEventListener("click", function () {
         const selectedOrigin = originSelect.value;
         const selectedDestination = destinationSelect.value;
@@ -226,4 +227,105 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
     });
+
+
+    // Fetch and display routes
+    /*document.getElementById("findRoutes").addEventListener("click", async function () {
+        const origin = documnet.getElementById("origin").value;
+        const destination = documen.getElementById("destination").value;
+        const companyFilter = documnet.getElementById("companyFiler")?.value || "";
+        const sortBy = documnet.getElementById("sortBy")?.value || "";
+
+        if (!origin || !destination) {
+            alert("Please selecet both origin and destinatin!");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${APIURL}/Routes/GetRoutes?origin=${origin}&destination=${destination}&company=${companyFilter}&sortBy=${sortBy}`);
+            if (!response.ok) throw new Error("Failed to fetch routes");
+
+            const routes = await response.json();
+            displayRoutes(routes);
+        } catch (error) {
+            console.log("ERror fetching routes:", error);
+            alert("FAiled to fetch travel routes")
+        }
+    })
 });
+
+function displayRoutes(routes) {
+    const routeList = document.getElemetById("routeList");
+    routeList.innerHTML = // CLear previous results
+
+    if (routes.length === 0) {
+        routeList.innerHTML = "<li>No available routes found.</li>";
+        return;
+    }
+
+    routes.forEach((route, index) => {
+        const listItem = document.createElement("li");
+
+        let routeDetails = route.map(flight => `
+            <div>
+                <strong>From:</strong> ${flight.travelRoute.origin} → <strong>To:</strong> ${flight.travelRoute.destination}
+                <br><strong>Company:</strong> ${flight.companyName} | 
+                <strong>Price:</strong> ${flight.price} | 
+                <strong>Travel Time:</strong> ${flight.startTime} - ${flight.endTime}
+            </div>
+        `).join("<hr>"); // Separator between flights)
+
+        listItem.innerHTML = `
+            <h3>Route ${index + 1}</h3>
+            ${routeDetails}
+            <button onclick="makeReservation(${JSON.stringify(route)})">Reserve</button>`;
+
+        routeList.appendChild(listItem);
+    });
+}
+
+async function makeReservation(route) {
+    const firstName = prompt("Enter your first name:");
+    const lastName = prompt("Enter your last name:");
+
+    if (!firstName || !lastName) {
+        alert("Reservation requires first and last name.");
+        return;
+    }
+
+    try {
+        // Step 1: Create the reservation
+        const reservationResponse = await fetch(`${APIURL}/reservation`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                firstName,
+                lastName,
+                totalPrice: route.reduce((sum, flight) => sum + flight.price, 0),
+                totalTravelTime: route.reduce((sum, flight) => sum + (new Date(flight.endTime) - new Date(flight.startTime)), 0)
+            })
+        });
+
+        if (!reservationResponse.ok) throw new Error("Failed to create reservation");
+
+        const reservation = await reservationResponse.json();
+        const reservationId = reservation.id;
+
+        // Step 2: Link each selected flight to the reservation
+        for (const flight of route) {
+            await fetch(`${APIURL}/pricereservation`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    reservationId,
+                    priceId: flight.id  // Link to PriceList entry
+                })
+            });
+        }
+
+        alert("Reservation successful!");
+    } catch (error) {
+        console.error("Error making reservation:", error);
+        alert("Reservation failed. Please try again.");
+    }
+}*/
