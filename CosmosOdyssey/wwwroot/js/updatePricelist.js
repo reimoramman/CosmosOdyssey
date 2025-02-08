@@ -3,23 +3,20 @@ const APIURL = 'https://localhost:7066/api'
 
 
 // Fetch pricelist for Find Routes
-function getHistoricPriceList() {
-    fetch(`${APIURL}/pricelist`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-    })
-        .then(response => response.json())
-        .then(data => console.log('Pricelist', data))
-        .catch(error => console.error('Error:', error));
+async function getHistoricPriceList() {
+    const response = await fetch(`${APIURL}/pricelist`);
+    tempData = await response.json();
+    return tempData;
 }
 
 // Get PriceList from TravelPrices API
 function getNewPriceList() {
     fetch('https://cosmosodyssey.azurewebsites.net/api/v1.0/TravelPrices', {
         method: 'GET',
+        mode: 'cors',
         header: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            // 'Origin': 'https://cosmosodyssey.azurewebsites.net/api',
+            'Content-Type': 'application/json'
         }
     })
         .then(data => data.json())
@@ -51,6 +48,9 @@ async function createNewRoute(origin, destination) {
 
 // TODO: Create function to save priceListData, similar to createNewRoute()
 async function saveToPriceList(pricelist) {
+    if (!pricelist) {
+        return
+    }
     const response = await fetch(`${APIURL}/pricelist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', accept: '*/*' },
@@ -59,7 +59,7 @@ async function saveToPriceList(pricelist) {
     });
 
     if (!response.ok) {
-        throw Error('Failed to save price list');
+        throw Error(`Failed to save price list: ${pricelist}`);
     }
     temptData = await response.json();
     return temptData;
@@ -73,12 +73,17 @@ async function saveJsonToDb() {
     // Get latest valid price list from db
     let currentPriceList = await getCurrentPriceList();
     // If valid prices exist, do nothing
-    if (currentPriceList.length != 0) {
+    if (currentPriceList != undefined && currentPriceList.length != 0) {
+        console.log('No pricelist')
         return
     }
     // Fetch new price list
     let data = await getMockPriceList();
     let validUntil = data.validUntil;
+    if (new Date(validUntil) < new Date()) {
+        console.log('Fetched expired price data')
+        return
+    }
     // Loop through each leg
     data.legs.forEach(async function (leg) {
         let legFrom = leg.routeInfo.from.name;
@@ -125,8 +130,8 @@ async function getCurrentPriceList() {
         /*let newPriceList = await getNewPriceList();
         await saveToPriceList(newPriceList);
         return newPriceList;*/
-        return getMockPriceList();
-        //return getNewPriceList();
+        // return getMockPriceList();
+        return getNewPriceList();
     }
 
     // TODO: Remove expired priceList elements
@@ -135,6 +140,7 @@ async function getCurrentPriceList() {
     let filteredHistoricPricelist = historicPricelist.filter(a => new Date(a.ValidUntil) > new Date());
 
     if (filteredHistoricPricelist.length === 0) {
+        console.log('filteredHistoricPricelist.length', filteredHistoricPricelist.length)
         let newPriceList = await getNewPriceList();
         await saveToPriceList(newPriceList);
         return newPriceList;
@@ -286,7 +292,34 @@ function findMultiLegRoutes(allRoutes, origin, destination) {
     return resultPaths;
 }
 
-// TODO: Finish the function
-/*function displayRoutes() {
+function displayRoutes(routes) {
+    const routeList = document.getElementById("routeList");
+    routeList.innerHTML = "";
 
-}*/
+    routes.forEach((route, index) => {
+        const listItem = document.createElement("li");
+
+        let routeDetails = route.map(flight => `
+        <div>
+            <strong>From:</strong> ${flight.origin} → <strong>To:</strong> ${flight.routeId}
+            <br><strong>Company:</strong> ${flight.companyName} |
+            <strong>Price:</strong> ${flight.price} |
+            <strong>Travel time:<strong> ${flight.startTime} - ${flight.endTime}
+        </div>
+        `).join("<hr>");
+
+        listItem.innerHTML = `
+        <h3>ROute ${index + 1} - Total Price: ${route[route.length - 1].totalPrice}</h3>
+        ${routeDetails}
+        <button onclick="makeReservation(${JSON.stringify(route)})">Reserve</button>
+        `;
+
+        routeList.appendChild(listItem);
+    });
+}
+
+
+// TODO: Finish the function
+async function makeReservation() {
+
+}
