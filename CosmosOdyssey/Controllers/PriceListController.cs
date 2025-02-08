@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using PriceLists.API.Models.Entities;
 using Routes.API.Data;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CosmosOdyssey.Controllers
 {
@@ -29,6 +28,23 @@ namespace CosmosOdyssey.Controllers
         {
 
             var pricelist = await routesDbContext.PriceList.FindAsync(id);
+
+            if (pricelist == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(pricelist);
+        }
+
+        // Get pricelist items that have not expired
+        [HttpGet]
+        [Route("active")]
+        [ActionName("GetActivePriceList")]
+        public async Task<IActionResult> GetActivePriceList()
+        {
+            var time = DateTime.Now.ToUniversalTime();
+            var pricelist = routesDbContext.PriceList.Where(f => f.ValidUntil > time);
 
             if (pricelist == null)
             {

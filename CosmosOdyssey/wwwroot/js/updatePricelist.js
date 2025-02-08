@@ -13,7 +13,6 @@ async function getHistoricPriceList() {
 async function getNewPriceList() {
     const response = await fetch(`${APIURL}/proxy/fetch-data`);
     tempData = await response.json();
-    console.log(tempData)
     return tempData;
 }
 
@@ -40,7 +39,7 @@ async function createNewRoute(origin, destination) {
     return tempData;
 }
 
-// TODO: Create function to save priceListData, similar to createNewRoute()
+// Save pricelist object to db
 async function saveToPriceList(pricelist) {
     if (!pricelist) {
         return
@@ -49,7 +48,6 @@ async function saveToPriceList(pricelist) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', accept: '*/*' },
         body: JSON.stringify(pricelist)
-        // body: JSON.stringify({'price': 10})
     });
 
     if (!response.ok) {
@@ -59,28 +57,13 @@ async function saveToPriceList(pricelist) {
     return temptData;
 }
 
-// Save JSON PriceList data to DB
-// TODO: request from the db, most recent pricelist and check if it is still valid OR make an endpoint to get only valid priceList items
-//  Then check if any valid prices exist. If not, download new ones. Currently the download is performed without checking for existing data
-async function saveJsonToDb() {
-
-    // Get latest valid price list from db
-    let currentPriceList = await getCurrentPriceList();
-    // If valid prices exist, do nothing
-    console.log('Saving price data')
-    if (currentPriceList != undefined && currentPriceList.length != 0) {
-        console.log('No pricelist')
-        return
-    }
-    // Fetch new price list
-    let data = await getMockPriceList();
-    let validUntil = data.validUntil;
-    if (new Date(validUntil) < new Date()) {
-        console.log('Fetched expired price data')
-        return
-    }
+// Save JSON PriceList from json to DB
+async function saveJsonToDb(currentPriceList) {
+    pricelist = []
+    let validUntil = currentPriceList.validUntil;
     // Loop through each leg
-    data.legs.forEach(async function (leg) {
+    console.log(currentPriceList)
+    currentPriceList.legs.forEach(async function (leg) {
         let legFrom = leg.routeInfo.from.name;
         let legTo = leg.routeInfo.to.name;
         // Check if route already exists in DB
@@ -111,38 +94,20 @@ async function saveJsonToDb() {
                 "travelRouteId": routeId
             }
             saveToPriceList(priceData);
+            pricelist.push(priceData);
         })
     })
+    return pricelist;
 }
 
-// Get Current priceList from Db, if not expired, otherwise get from API
-async function getCurrentPriceList() {
-    //Fetch historic price list from the database
-    let historicPricelist = await getHistoricPriceList();
-
-    // If there is no data in the database, fetch a new price list
-    if (!historicPricelist || historicPricelist.length === 0) {
-        /*let newPriceList = await getNewPriceList();
-        await saveToPriceList(newPriceList);
-        return newPriceList;*/
-        // return getMockPriceList();
-        return getNewPriceList();
+// Get latest pricelist data. If data in db is expired, request from api and save to db also
+async function getLatestPriceList() {
+    let currentPriceList = await getHistoricPriceList();
+    if (currentPriceList.length === 0) {
+        newPriceList = await getNewPriceList();
+        currentPriceList = await saveJsonToDb(newPriceList)
     }
-
-    // TODO: Remove expired priceList elements
-    // TODO? Replace with an endpoint that filters out expired priceList elements
-    let currentDate = new Date();
-    let filteredHistoricPricelist = historicPricelist.filter(a => new Date(a.ValidUntil) > new Date());
-
-    if (filteredHistoricPricelist.length === 0) {
-        console.log('filteredHistoricPricelist.length', filteredHistoricPricelist.length)
-        let newPriceList = await getNewPriceList();
-        await saveToPriceList(newPriceList);
-        return newPriceList;
-        //return getMockPriceList();
-        //return getNewPriceList();
-    }
-    return filteredHistoricPricelist;
+    return currentPriceList;
 }
 
 
@@ -152,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const destinationSelect = document.getElementById("destination");
     const findRoutes = document.getElementById("findRoutes"); // Ensure this exists in HTML
 
-    saveJsonToDb();
+    getLatestPriceList();
 
     // Function to populate dropdowns
     function populateDropdown(selectElement, options) {
