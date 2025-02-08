@@ -10,17 +10,11 @@ async function getHistoricPriceList() {
 }
 
 // Get PriceList from TravelPrices API
-function getNewPriceList() {
-    fetch('https://cosmosodyssey.azurewebsites.net/api/v1.0/TravelPrices', {
-        method: 'GET',
-        mode: 'cors',
-        header: {
-            // 'Origin': 'https://cosmosodyssey.azurewebsites.net/api',
-            'Content-Type': 'application/json'
-        }
-    })
-        .then(data => data.json())
-        .then(function (output) {return output });
+async function getNewPriceList() {
+    const response = await fetch(`${APIURL}/proxy/fetch-data`);
+    tempData = await response.json();
+    console.log(tempData)
+    return tempData;
 }
 
 // Get price data from JSON file (Static data)
@@ -73,6 +67,7 @@ async function saveJsonToDb() {
     // Get latest valid price list from db
     let currentPriceList = await getCurrentPriceList();
     // If valid prices exist, do nothing
+    console.log('Saving price data')
     if (currentPriceList != undefined && currentPriceList.length != 0) {
         console.log('No pricelist')
         return
