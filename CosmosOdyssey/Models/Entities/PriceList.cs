@@ -11,9 +11,8 @@ namespace PriceLists.API.Models.Entities
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public DateTime ValidUntil { get; set; }
-
-        // Relationship with route
-        public Guid TravelRouteId { get; set; }
+        public string? Origin { get; set; }
+        public string? Destination { get; set; }
 
     }
 }

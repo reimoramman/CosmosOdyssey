@@ -54,6 +54,23 @@ namespace CosmosOdyssey.Controllers
             return Ok(pricelist);
         }
 
+        [HttpGet]
+        [Route("{time:DateTime}")]
+        [ActionName("GetActivePriceList")]
+        public async Task<IActionResult> GetActivePriceList([FromRoute] DateTime time)
+        {
+            time = time.ToUniversalTime();
+            var validTime = DateTime.Now.ToUniversalTime();
+            var pricelist = routesDbContext.PriceList.Where(f => f.ValidUntil > validTime && f.StartTime > time);
+
+            if (pricelist == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(pricelist);
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddPriceList(PriceList pricelist)
         {
