@@ -33,25 +33,26 @@
         <button id="findRoutes">Find Routes</button>
     </div>
 
-    <section id="routes">
+    <section id="routes" style="display: none;">
         <h2>Available Routes</h2>
-        <ul id="routeList"></ul>
 
         <div class="filters">
             <label for="companyFilter">Filter by Company:</label>
+
             <select id="companyFilter">
                 <option value="">All</option>
-                <option value="SpaceX">SpaceX</option>
-                <option value="Blue Origin">Blue Origin</option>
             </select>
 
             <label for="sortBy">Sort by:</label>
+
             <select id="sortBy">
                 <option value="price">Price</option>
                 <option value="distance">Distance</option>
                 <option value="travelTime">Travel Time</option>
             </select>
         </div>
+
+        <ul id="routeList"></ul>
 
     </section>
 
