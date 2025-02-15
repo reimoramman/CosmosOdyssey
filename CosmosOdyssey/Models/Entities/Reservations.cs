@@ -1,4 +1,5 @@
 ﻿using PriceLists.API.Models.Entities;
+using PriceReservations.API.Models.Entities;
 
 namespace Reservations.API.Models.Entities
 {
@@ -12,5 +13,6 @@ namespace Reservations.API.Models.Entities
         public TimeSpan TotalTravelTime { get; set; }
         public DateTime CreatedAt { get; set; }
 
+        public List<PriceReservation>? SelectedRoutes { get; set; }
     }
 }

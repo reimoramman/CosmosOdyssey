@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PriceReservations.API.Models.Entities;
 using Reservations.API.Models.Entities;
 using Routes.API.Data;
 
@@ -62,6 +63,24 @@ namespace CosmosOdyssey.Controllers
             existingReservation.TotalPrice = updatedReservation.TotalPrice;
             existingReservation.TotalTravelTime = updatedReservation.TotalTravelTime;
             existingReservation.CreatedAt = updatedReservation.CreatedAt;
+
+            var existingRoutes = routesDbContext.PriceReservation.Where(pr => pr.ReservationId == id);
+            routesDbContext.PriceReservation.RemoveRange(existingRoutes);
+
+            if (updatedReservation.SelectedRoutes != null && updatedReservation.SelectedRoutes.Any())
+            {
+                foreach (var route in updatedReservation.SelectedRoutes)
+                {
+                    var priceReservation = new PriceReservation
+                    {
+                        Id = Guid.NewGuid(),
+                        ReservationId = id,
+                        PriceId = route.PriceId
+                    };
+
+                    await routesDbContext.PriceReservation.AddAsync(priceReservation);
+                }
+            }
 
             await routesDbContext.SaveChangesAsync();
             return Ok(existingReservation);
