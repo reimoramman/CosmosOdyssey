@@ -148,9 +148,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
 document.getElementById("findRoutes").addEventListener("click", async function () {
+    // Get origin and destination form dropdown
     const origin = document.getElementById("origin").value;
     const destination = document.getElementById("destination").value;
 
+    // Check that both values are selected
     if (!origin || !destination) {
         alert("Please slect both origin and destination");
         return;
@@ -170,9 +172,11 @@ document.getElementById("findRoutes").addEventListener("click", async function (
     }
 });
 
+// Filter routes where depart time is adter TIME and route starts at CURRENTLOCATION
 // TODO Make it not loop like crazy :D
 function findLaterTravels(currentLocation, pricelist, time) {
     let suitableRoutes = [];
+    // Iterate through the price list and find valid routes from currentLocation
     pricelist.forEach(route => {
         if (new Date(route.startTime) > time && route.origin == currentLocation) {
             suitableRoutes.push(route);
@@ -193,16 +197,21 @@ function findLaterTravels(currentLocation, pricelist, time) {
 
 // Return valid routes, including stopovers
 function findMultiLegRoutes(pricelist, origin, destination, time) {
-    let resultPaths = [];
+    let resultPaths = []; // Store all valid paths
+
+    // Get all valid starting travels from the origin
     let startingTravels = findLaterTravels(origin, pricelist, time);
 
     startingTravels.forEach(route => {
+        // Recursively find routes leading to the destination
         let path = findMultiLegRoutesHelper(pricelist, route, destination, []);
+
         if (path.length > 0) {
             resultPaths.push(path);
         }
     });
 
+    console.log("Final Found Routes:", resultPaths);
     return resultPaths;
 }
 
@@ -227,15 +236,19 @@ function findMultiLegRoutesHelper(pricelist, current, destination, path) {
         return [...path];
     }
 
+    // Find the next possible flights from the current location
     let nextTravels = findLaterTravels(current.destination, pricelist, current.endTime);
     let validPaths = [];
 
+    // Recursively explore possible routes
     nextTravels.forEach(nextRoute => {
         let newPath = findMultiLegRoutesHelper(pricelist, nextRoute, destination, [...path]);
+
         if (newPath.length > 0) {
             validPaths.push(newPath);
         }
     });
+
     // Return first valid path
     return validPaths.length > 0 ? validPaths[0] : [];
 }
@@ -273,21 +286,30 @@ function displayRoutes(routes) {
     // Show or hide the section
     routesSection.style.display = routes.length > 0 ? "flex" : "none";
 
+    // Clear previous results
     routeList.innerHTML = "";
+
+    console.log("🔍 Debugging: Checking Routes before displaying:", routes);
 
     routes.forEach((route, index) => {
         const listItem = document.createElement("li");
         listItem.classList.add("route-box"); // Apply the new styling
 
-        let routeDetails = route.map(flight => `
+        // Create a detailed view of each flight in the route
+        let routeDetails = route.map(flight => {
+            const startTimeUTC = new Date(flight.startTime).toLocaleString('en-GB', { timeZone: 'UTC' }) + " UTC"; // convert to readable utc 
+            const endTimeUTC = new Date(flight.endTime).toLocaleString('en-GB', { timeZone: 'UTC' }) + " UTC";
+
+            return `
             <div>
                 <strong>From:</strong> ${flight.origin} → <strong>To:</strong> ${flight.destination}
                 <br><strong>Company:</strong> ${flight.companyName} |
                 <strong>Price:</strong> ${flight.price} |
-                <strong>Travel time:</strong> ${flight.startTime} - ${flight.endTime}
-            </div>
-        `).join("<hr>");
+                <strong>Travel time (UTC):</strong> ${startTimeUTC} - ${endTimeUTC}
+            </div>`;
+        }).join("<hr>");
 
+        // Create route box with a reservation button
         listItem.innerHTML = `
             <h3>Route ${index + 1} - Total Price: ${route.reduce((sum, flight) => sum + flight.price, 0)}</h3>
             ${routeDetails}
@@ -308,28 +330,49 @@ function displayRoutes(routes) {
 
 
 // TODO: Finish the function
-async function makeReservation(routeEncoded) {
-    const route = JSON.parse(decodeURIComponent(routeEncoded));
+async function makeReservation(route) {
     const firstName = prompt("Enter your first name:");
     const lastName = prompt("Enter your last name:");
 
     if (!firstName || !lastName) {
-        alert("Reservation requires both dirst name and last name");
+        alert("Reservation requires first and last name.");
         return;
     }
+
+    // Calculate total price
+    const totalPrice = route.reduce((sum, flight) => sum + flight.price, 0);
+
+    // Calculate total travel time (millisecond to timespan
+
+    const totalTravelTimeMs = route.reduce((sum, flight) => sum + (new Date(flight.endTime) - new Date(flight.startTime)), 0);
+    const totalTravelTime = new Date(totalTravelTimeMs).toISOString().substr(11, 8); //HH:mm:ss
+
 
     const reservationData = {
         firstName,
         lastName,
+        totalPrice,
+        totalTravelTime,
+        createdAt: new Date().toISOString(),
         selectedRoutes: route.map(flight => ({
-            origin: flight.origin,
-            destination: flight.destination,
+            routeId: flight.routeId,
             companyName: flight.companyName,
             price: flight.price,
             startTime: flight.startTime,
             endTime: flight.endTime
         }))
     };
+    /*const reservationData = {
+        firstName,
+        lastName,
+        selectedRoutes: route.map(flight => ({
+            routeId: flight.routeId,
+            companyName: flight.companyName,
+            price: flight.price,
+            startTime: flight.startTime,
+            endTime: flight.endTime
+        }))
+    };*/
 
     try {
         const response = await fetch(`${APIURL}/reservation`, {
@@ -339,13 +382,13 @@ async function makeReservation(routeEncoded) {
         });
 
         const result = await response.json();
-        alert(result.message)
+        alert(result.message || "Reservation successful");
     } catch (error) {
-        console.error("error making reservation:", error);
-        alert("Reservation failed. Please try again");
+        console.error("Error making reservation:", error);
+        alert("Reservation failed. Please try again.");
     }
-
 }
+
 
 
 document.getElementById("companyFilter").addEventListener("change", applyFilters);
