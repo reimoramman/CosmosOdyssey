@@ -42,14 +42,14 @@ namespace CosmosOdyssey.Controllers
         public async Task<IActionResult> AddReservation(Reservation reservation)
         {
             reservation.Id = Guid.NewGuid();
+            reservation.CreatedAt = DateTime.UtcNow; // Ensure timestamp is set
             await routesDbContext.Reservations.AddAsync(reservation);
             await routesDbContext.SaveChangesAsync();
             return CreatedAtAction(nameof(GetReservationById), new { id = reservation.Id }, reservation);
         }
 
-        [HttpPut]
-        [Route("{id:Guid}")]
-        public async Task<IActionResult> UpdateReservation([FromRoute] Guid id, [FromBody] Reservation updatedReservation)
+        [HttpPut("{id:Guid}")]
+        public async Task<IActionResult> UpdateReservation(Guid id, [FromBody] Reservation updatedReservation)
         {
             var existingReservation = await routesDbContext.Reservations.FindAsync(id);
 
@@ -63,24 +63,6 @@ namespace CosmosOdyssey.Controllers
             existingReservation.TotalPrice = updatedReservation.TotalPrice;
             existingReservation.TotalTravelTime = updatedReservation.TotalTravelTime;
             existingReservation.CreatedAt = updatedReservation.CreatedAt;
-
-            var existingRoutes = routesDbContext.PriceReservation.Where(pr => pr.ReservationId == id);
-            routesDbContext.PriceReservation.RemoveRange(existingRoutes);
-
-            if (updatedReservation.SelectedRoutes != null && updatedReservation.SelectedRoutes.Any())
-            {
-                foreach (var route in updatedReservation.SelectedRoutes)
-                {
-                    var priceReservation = new PriceReservation
-                    {
-                        Id = Guid.NewGuid(),
-                        ReservationId = id,
-                        PriceId = route.PriceId
-                    };
-
-                    await routesDbContext.PriceReservation.AddAsync(priceReservation);
-                }
-            }
 
             await routesDbContext.SaveChangesAsync();
             return Ok(existingReservation);

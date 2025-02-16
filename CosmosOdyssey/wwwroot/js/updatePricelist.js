@@ -328,7 +328,6 @@ function displayRoutes(routes) {
 }
 
 
-
 // TODO: Finish the function
 async function makeReservation(route) {
     const firstName = prompt("Enter your first name:");
@@ -339,53 +338,52 @@ async function makeReservation(route) {
         return;
     }
 
-    // Calculate total price
-    const totalPrice = route.reduce((sum, flight) => sum + flight.price, 0);
-
-    // Calculate total travel time (millisecond to timespan
-
-    const totalTravelTimeMs = route.reduce((sum, flight) => sum + (new Date(flight.endTime) - new Date(flight.startTime)), 0);
-    const totalTravelTime = new Date(totalTravelTimeMs).toISOString().substr(11, 8); //HH:mm:ss
-
-
+    // Step 1: Create a reservation
     const reservationData = {
         firstName,
         lastName,
-        totalPrice,
-        totalTravelTime,
-        createdAt: new Date().toISOString(),
-        selectedRoutes: route.map(flight => ({
-            routeId: flight.routeId,
-            companyName: flight.companyName,
-            price: flight.price,
-            startTime: flight.startTime,
-            endTime: flight.endTime
-        }))
+        totalPrice: route.reduce((sum, flight) => sum + flight.price, 0),
+        totalTravelTime: route.reduce((sum, flight) => sum + (new Date(flight.endTime) - new Date(flight.startTime)), 0)
     };
-    /*const reservationData = {
-        firstName,
-        lastName,
-        selectedRoutes: route.map(flight => ({
-            routeId: flight.routeId,
-            companyName: flight.companyName,
-            price: flight.price,
-            startTime: flight.startTime,
-            endTime: flight.endTime
-        }))
-    };*/
 
     try {
-        const response = await fetch(`${APIURL}/reservation`, {
+        const reservationResponse = await fetch(`${APIURL}/reservation`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(reservationData)
         });
 
-        const result = await response.json();
-        alert(result.message || "Reservation successful");
+        if (!reservationResponse.ok) {
+            throw new Error(`Failed to create reservation: ${reservationResponse.statusText}`);
+        }
+
+        const reservationResult = await reservationResponse.json();
+        console.log("✅ Reservation Created:", reservationResult);
+
+        // Step 2: Link the reservation to selected routes
+        for (const flight of route) {
+            const priceReservationData = {
+                reservationId: reservationResult.id, // Ensure this ID exists
+                priceId: flight.routeId // Ensure this ID exists
+            };
+
+            const priceReservationResponse = await fetch(`${APIURL}/pricereservation`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(priceReservationData)
+            });
+
+            if (!priceReservationResponse.ok) {
+                throw new Error(`Failed to associate route ${flight.origin} → ${flight.destination}`);
+            }
+
+            console.log(`✅ Successfully associated route: ${flight.origin} → ${flight.destination}`);
+        }
+
+        alert("Reservation successful!");
     } catch (error) {
         console.error("Error making reservation:", error);
-        alert("Reservation failed. Please try again.");
+        alert(error.message);
     }
 }
 

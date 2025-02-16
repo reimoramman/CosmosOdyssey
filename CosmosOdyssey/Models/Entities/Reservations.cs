@@ -12,7 +12,5 @@ namespace Reservations.API.Models.Entities
         public decimal TotalPrice { get; set; }
         public TimeSpan TotalTravelTime { get; set; }
         public DateTime CreatedAt { get; set; }
-
-        public List<PriceReservation>? SelectedRoutes { get; set; }
     }
 }
