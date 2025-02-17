@@ -39,14 +39,21 @@ namespace CosmosOdyssey.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddReservation(Reservation reservation)
+        public async Task<IActionResult> AddReservation([FromBody] Reservation reservation)
         {
+            if (reservation == null)
+            {
+                return BadRequest("Reservation data is missing.");
+            }
+
             reservation.Id = Guid.NewGuid();
-            reservation.CreatedAt = DateTime.UtcNow; // Ensure timestamp is set
+            reservation.CreatedAt = DateTime.UtcNow;
             await routesDbContext.Reservations.AddAsync(reservation);
             await routesDbContext.SaveChangesAsync();
             return CreatedAtAction(nameof(GetReservationById), new { id = reservation.Id }, reservation);
         }
+
+
 
         [HttpPut("{id:Guid}")]
         public async Task<IActionResult> UpdateReservation(Guid id, [FromBody] Reservation updatedReservation)

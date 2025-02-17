@@ -338,52 +338,80 @@ async function makeReservation(route) {
         return;
     }
 
-    // Step 1: Create a reservation
+    // Calculate total price & travel time
+    const totalPrice = route.reduce((sum, flight) => sum + flight.price, 0);
+    const totalTravelTimeMs = route.reduce((sum, flight) => sum + (new Date(flight.endTime) - new Date(flight.startTime)), 0);
+
+    // ✅ Convert totalTravelTime to `hh:mm:ss`
+    const totalSeconds = Math.floor(totalTravelTimeMs / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const formattedTravelTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
     const reservationData = {
-        firstName,
-        lastName,
-        totalPrice: route.reduce((sum, flight) => sum + flight.price, 0),
-        totalTravelTime: route.reduce((sum, flight) => sum + (new Date(flight.endTime) - new Date(flight.startTime)), 0)
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        totalPrice,
+        totalTravelTime: formattedTravelTime, // ✅ C# expects "hh:mm:ss"
+        createdAt: new Date().toISOString() // ✅ Ensure it's in UTC format
     };
 
+    console.log("📤 Sending reservation request:", reservationData);
+
     try {
-        const reservationResponse = await fetch(`${APIURL}/reservation`, {
+        const response = await fetch(`${APIURL}/reservation`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(reservationData)
         });
 
-        if (!reservationResponse.ok) {
-            throw new Error(`Failed to create reservation: ${reservationResponse.statusText}`);
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(`Failed to create reservation: ${errorMessage}`);
         }
 
-        const reservationResult = await reservationResponse.json();
-        console.log("✅ Reservation Created:", reservationResult);
+        const result = await response.json();
+        console.log("✅ Reservation created:", result);
 
-        // Step 2: Link the reservation to selected routes
-        for (const flight of route) {
-            const priceReservationData = {
-                reservationId: reservationResult.id, // Ensure this ID exists
-                priceId: flight.routeId // Ensure this ID exists
-            };
+        // Now link the selected route(s) to the reservation
+        await linkRoutesToReservation(result.id, route);
+        alert("Reservation successful!");
+    } catch (error) {
+        console.error("❌ Error making reservation:", error);
+        alert("Reservation failed. Please try again.");
+    }
+}
 
-            const priceReservationResponse = await fetch(`${APIURL}/pricereservation`, {
+
+
+async function linkRoutesToReservation(reservationId, route) {
+    for (const flight of route) {
+        const priceReservationData = {
+            reservationId,
+            priceId: flight.id
+             // Ensure this matches the `PriceList` ID
+        };
+
+        console.log("📤 Linking route to reservation:", priceReservationData);
+
+        try {
+            const response = await fetch(`${APIURL}/priceReservation`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(priceReservationData)
             });
 
-            if (!priceReservationResponse.ok) {
-                throw new Error(`Failed to associate route ${flight.origin} → ${flight.destination}`);
+            if (!response.ok) {
+                const errorMessage = await response.text();
+                throw new Error(`Failed to associate route ${flight.origin} → ${flight.destination}: ${errorMessage}`);
             }
 
-            console.log(`✅ Successfully associated route: ${flight.origin} → ${flight.destination}`);
+            console.log(`✅ Linked route ${flight.origin} → ${flight.destination}`);
+        } catch (error) {
+            console.error("❌ Error linking route:", error);
+            alert(`Failed to associate route ${flight.origin} → ${flight.destination}`);
         }
-
-        alert("Reservation successful!");
-    } catch (error) {
-        console.error("Error making reservation:", error);
-        alert(error.message);
     }
 }
 
