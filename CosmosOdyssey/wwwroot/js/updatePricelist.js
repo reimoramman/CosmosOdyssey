@@ -340,21 +340,23 @@ async function makeReservation(route) {
 
     // Calculate total price & travel time
     const totalPrice = route.reduce((sum, flight) => sum + flight.price, 0);
-    const totalTravelTimeMs = route.reduce((sum, flight) => sum + (new Date(flight.endTime) - new Date(flight.startTime)), 0);
+    //const totalTravelTimeMs = route.reduce((sum, flight) => sum + (new Date(flight.endTime) - new Date(flight.startTime)), 0);
 
-    // ✅ Convert totalTravelTime to `hh:mm:ss`
-    const totalSeconds = Math.floor(totalTravelTimeMs / 1000);
+    // ✅ Convert totalTravelTime to ISO 8601 Duration format (PTxHxMxS)
+    /*const totalSeconds = Math.floor(totalTravelTimeMs / 1000);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    const formattedTravelTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    const isoDuration = `PT${hours}H${minutes}M${seconds}S`;*/
+    const totalTravelTimeMs = route.reduce((sum, flight) => sum + (new Date(flight.endTime) - new Date(flight.startTime)), 0);
+    const totalTravelTime = new Date(totalTravelTimeMs).toISOString().substr(11, 8); //HH:mm:ss
 
     const reservationData = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         totalPrice,
-        totalTravelTime: formattedTravelTime, // ✅ C# expects "hh:mm:ss"
-        createdAt: new Date().toISOString() // ✅ Ensure it's in UTC format
+        totalTravelTime,
+        createdAt: new Date().toISOString()
     };
 
     console.log("📤 Sending reservation request:", reservationData);
@@ -382,6 +384,7 @@ async function makeReservation(route) {
         alert("Reservation failed. Please try again.");
     }
 }
+
 
 
 
