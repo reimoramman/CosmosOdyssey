@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Routes.API.Data;
 
@@ -11,9 +12,11 @@ using Routes.API.Data;
 namespace CosmosOdyssey.Migrations
 {
     [DbContext(typeof(RoutesDbContext))]
-    partial class RoutesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250221115728_PriceListDistance")]
+    partial class PriceListDistance
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,8 +37,8 @@ namespace CosmosOdyssey.Migrations
                     b.Property<string>("Destination")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("Distance")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Distance")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");

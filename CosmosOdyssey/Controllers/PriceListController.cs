@@ -96,6 +96,7 @@ namespace CosmosOdyssey.Controllers
             existingPriceList.StartTime = updatedPriceList.StartTime;
             existingPriceList.EndTime = updatedPriceList.EndTime;
             existingPriceList.ValidUntil = updatedPriceList.ValidUntil;
+            existingPriceList.Distance = updatedPriceList.Distance;
 
             await routesDbContext.SaveChangesAsync();
             return Ok(existingPriceList);

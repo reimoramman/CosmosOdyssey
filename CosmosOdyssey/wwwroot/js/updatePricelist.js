@@ -51,6 +51,7 @@ async function saveJsonToDb(currentPriceList) {
     currentPriceList.legs.forEach(async function (leg) {
         let origin = leg.routeInfo.from.name;
         let destination = leg.routeInfo.to.name;
+        let distance = leg.routeInfo.distance;
 
         leg.providers.forEach(function (provider) {
             let companyName = provider.company.name
@@ -65,7 +66,8 @@ async function saveJsonToDb(currentPriceList) {
                 "startTime": flightStart,
                 "endTime": flightEnd,
                 "origin": origin,
-                "destination": destination
+                "destination": destination,
+                "distance": distance
             }
             saveToPriceList(priceData);
             pricelist.push(priceData);
@@ -76,13 +78,10 @@ async function saveJsonToDb(currentPriceList) {
 
 // Get latest pricelist data. If data in db is expired, request from api and save to db also
 async function getLatestPriceList() {
-    console.log('ONLY CALL THIS ONCE!')
     let currentPriceList = await getHistoricPriceList();
-    console.log("CurrentPricelist", currentPriceList);
     if (currentPriceList.length === 0) {
         newPriceList = await getNewPriceList();
         currentPriceList = await saveJsonToDb(newPriceList)
-        console.log('new prices', currentPriceList)
     }
     return currentPriceList;
 }
@@ -154,13 +153,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         try {
             //Find paths from origin to destination
-            console.log("PriceList", pricelist);
             const possibleRoutes = findMultiLegRoutes(pricelist, origin, destination, new Date());
-            console.log("HEEEELP", possibleRoutes);
             currentDisplayedRoutes = possibleRoutes; // Store the results globally for filtering/sorting
             displayRoutes(possibleRoutes);
         } catch (error) {
-            console.error("Error fetchign routes", error);
             alert("Failed to fetch travel routes")
         }
     });
@@ -170,13 +166,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 function findLaterTravels(pricelist, currentLocation, time) {
     let suitableRoutes = [];
     // Iterate through the price list and find valid routes from currentLocation
-    console.log(pricelist);
     pricelist.forEach(route => {
         if (new Date(route.startTime) > time && route.origin == currentLocation) {
             suitableRoutes.push(route);
         }
     })
-    console.log('oncomingPrices', suitableRoutes)
     return suitableRoutes
 }
 
@@ -193,7 +187,6 @@ function findMultiLegRoutes(pricelist, origin, destination, time) {
         resultPaths.push(...allPaths); // Store found paths
     });
 
-    console.log("Final Found Routes:", resultPaths);
     return resultPaths;
 }
 
@@ -220,8 +213,6 @@ function displayRoutes(routes) {
     // Clear previous results
     routeList.innerHTML = "";
 
-    console.log("🔍 Debugging: Checking Routes before displaying:", routes);
-
     routes.forEach((route, index) => {
         const listItem = document.createElement("li");
         listItem.classList.add("route-box"); // Apply the new styling
@@ -242,7 +233,10 @@ function displayRoutes(routes) {
 
         // Create route box with a reservation button
         listItem.innerHTML = `
-            <h3>Route ${index + 1} - Total Price: ${route.reduce((sum, flight) => sum + flight.price, 0)}</h3>
+            <h2>Route ${index + 1}<h2>
+            <h3>Total Price: ${route.reduce((sum, flight) => sum + flight.price, 0)}</h3>
+            <h3>Total Distance: ${route.reduce((sum, flight) => sum + flight.distance, 0)}</h3>
+            <h3>Total Travel Time: ${calculateTotalTravelTime(route)}</h3>
             ${routeDetails}
             <button class="reserve-btn" data-route='${JSON.stringify(route)}'>Reserve</button>
         `;
@@ -256,6 +250,22 @@ function displayRoutes(routes) {
             makeReservation(route);
         });
     });
+}
+
+function calculateTotalTravelTime(route) {
+    if (route.length === 0) return "00:00:00";
+
+    const startTime = new Date(route[0].startTime); // First flight start
+    const endTime = new Date(route[route.length - 1].endTime); // Last flight end
+
+    const totalTravelTimeMs = endTime - startTime; // Difference in milliseconds
+
+    // Convert to HH:MM:SS format
+    const hours = Math.floor(totalTravelTimeMs / (1000 * 60 * 60));
+    const minutes = Math.floor((totalTravelTimeMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((totalTravelTimeMs % (1000 * 60)) / 1000);
+
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
 async function makeReservation(route) {
@@ -280,8 +290,6 @@ async function makeReservation(route) {
         createdAt: new Date().toISOString()
     };
 
-    console.log("📤 Sending reservation request:", reservationData);
-
     try {
         const response = await fetch(`${APIURL}/reservation`, {
             method: "POST",
@@ -295,13 +303,11 @@ async function makeReservation(route) {
         }
 
         const result = await response.json();
-        console.log("✅ Reservation created:", result);
 
         // Now link the selected route(s) to the reservation
         await linkRoutesToReservation(result.id, route);
         alert("Reservation successful!");
     } catch (error) {
-        console.error("❌ Error making reservation:", error);
         alert("Reservation failed. Please try again.");
     }
 }
@@ -315,8 +321,6 @@ async function linkRoutesToReservation(reservationId, route) {
             // Ensure this matches the `PriceList` ID
         };
 
-        console.log("📤 Linking route to reservation:", priceReservationData);
-
         try {
             const response = await fetch(`${APIURL}/priceReservation`, {
                 method: "POST",
@@ -329,9 +333,7 @@ async function linkRoutesToReservation(reservationId, route) {
                 throw new Error(`Failed to associate route ${flight.origin} → ${flight.destination}: ${errorMessage}`);
             }
 
-            console.log(`✅ Linked route ${flight.origin} → ${flight.destination}`);
         } catch (error) {
-            console.error("❌ Error linking route:", error);
             alert(`Failed to associate route ${flight.origin} → ${flight.destination}`);
         }
     }
@@ -348,7 +350,6 @@ function applyFilters() {
     const sortBy = document.getElementById("sortBy").value;
 
     let filteredRoutes = [...currentDisplayedRoutes]; // Clone array to avoid modifying original data
-    console.log('routes', currentDisplayedRoutes);
 
     // Apply Company Filter
     if (company && company !== "All") {
@@ -356,7 +357,6 @@ function applyFilters() {
             route.some(flight => flight.companyName === company)
         );
     }
-    console.log('filtered', filteredRoutes);
 
     // Apply Sorting
     if (sortBy === "price") {
