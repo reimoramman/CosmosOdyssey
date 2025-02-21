@@ -6,7 +6,7 @@ let currentDisplayedRoutes = [];
 
 // Get PriceList from db
 async function getHistoricPriceList() {
-    const response = await fetch(`${APIURL}/pricelist`);
+    const response = await fetch(`${APIURL}/pricelist/active`);
     tempData = await response.json();
     return tempData;
 }
@@ -76,10 +76,12 @@ async function saveJsonToDb(currentPriceList) {
 
 // Get latest pricelist data. If data in db is expired, request from api and save to db also
 async function getLatestPriceList() {
+    console.log('ONLY CALL THIS ONCE!')
     let currentPriceList = await getHistoricPriceList();
     if (currentPriceList.length === 0) {
         newPriceList = await getNewPriceList();
         currentPriceList = await saveJsonToDb(newPriceList)
+        console.log('new prices', currentPriceList)
     }
     return currentPriceList;
 }
@@ -89,9 +91,9 @@ async function getLatestPriceList() {
 
 
 // Function to populate dropdowns
-function populateDropdown(selectElement, options) {
+function populateDropdown(selectElement, options, default_value = '-- Select --') {
     const selectedValue = selectElement.value;
-    selectElement.innerHTML = '<option value="">-- Select --</option>'; // Default option
+    selectElement.innerHTML = `<option value="">${default_value}</option>`; // Default option
     options.forEach(option => {
         const optionElement = document.createElement("option");
         optionElement.value = option;
@@ -108,19 +110,21 @@ function populateDropdown(selectElement, options) {
 document.addEventListener("DOMContentLoaded", async function () {
     const originSelect = document.getElementById("origin");
     const destinationSelect = document.getElementById("destination");
+    const filterSelect = document.getElementById("companyFilter");
     const findRoutes = document.getElementById("findRoutes"); // Ensure this exists in HTML
 
     // Fetch Prices and routes from PriceList
     const pricelist = await getLatestPriceList();
-    console.log(pricelist);
 
     // Extract unique origins and destinations
     const uniqueOrigins = [...new Set(pricelist.map(route => route.origin))];
-    const uniqueDestinations = [...new Set(pricelist.map(route => route.destination))];
+    const uniqueDestinations = [...new Set(pricelist.map(route => route.destination))];  // TODO:: remove companies with no routes
+    const uniqueCompanies = [...new Set(pricelist.map(route => route.companyName))].filter(Boolean);
 
     // Populate origin and destination dropdowns
     populateDropdown(originSelect, uniqueOrigins);
     populateDropdown(destinationSelect, uniqueDestinations);
+    populateDropdown(filterSelect, uniqueCompanies, 'All')
 
     // Prevent selecting the same destination as origin
     originSelect.addEventListener("change", function () {
@@ -141,39 +145,31 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Prevent selecting the same origin and destination when clicking "Find Routes"
 
-    findRoutes.addEventListener("click", function () {
+    findRoutes.addEventListener("click", async function () {
+        // Get origin and destination form dropdown
+        const origin = document.getElementById("origin").value;
+        const destination = document.getElementById("destination").value;
 
+        // Check that both values are selected
+        if (!origin || !destination) {
+            alert("Please slect both origin and destination");
+            return;
+        }
+
+        try {
+            //Find paths from origin to destination
+            const possibleRoutes = findMultiLegRoutes(pricelist, origin, destination, new Date());
+
+            currentDisplayedRoutes = possibleRoutes; // Store the results globally for filtering/sorting
+            displayRoutes(possibleRoutes);
+        } catch (error) {
+            console.error("Error fetchign routes", error);
+            alert("Failed to fetch travel routes")
+        }
     });
 })
 
-
-document.getElementById("findRoutes").addEventListener("click", async function () {
-    // Get origin and destination form dropdown
-    const origin = document.getElementById("origin").value;
-    const destination = document.getElementById("destination").value;
-
-    // Check that both values are selected
-    if (!origin || !destination) {
-        alert("Please slect both origin and destination");
-        return;
-    }
-
-    try {
-        //Fetch direct and indirect routes
-        const pricelist = await getLatestPriceList();
-
-        //Find paths from origin to destination
-        const possibleRoutes = findMultiLegRoutes(pricelist, origin, destination, new Date());
-
-        displayRoutes(possibleRoutes);
-    } catch (error) {
-        console.error("Error fetchign routes", error);
-        alert("Failed to fetch travel routes")
-    }
-});
-
 // Filter routes where depart time is adter TIME and route starts at CURRENTLOCATION
-// TODO Make it not loop like crazy :D
 function findLaterTravels(currentLocation, pricelist, time) {
     let suitableRoutes = [];
     // Iterate through the price list and find valid routes from currentLocation
@@ -253,32 +249,63 @@ function findMultiLegRoutesHelper(pricelist, current, destination, path) {
     return validPaths.length > 0 ? validPaths[0] : [];
 }
 
-/*function displayRoutes(routes) {
-    const routeList = document.getElementById("routeList");
-    routeList.innerHTML = "";
+let tempList = [
+    { 'origin': 'earth', 'destination': 'mars' },
+    { 'origin': 'mars', 'destination': 'neptune' },
+    { 'origin': 'neptune', 'destination': 'venus' },
+    { 'origin': 'neptune', 'destination': 'jupiter' },
+    { 'origin': 'venus', 'destination': 'pluto' },
+    { 'origin': 'earth', 'destination': 'jupiter' },
+    { 'origin': 'mars', 'destination': 'jupiter' }
+]
+function testFilter(routes, location) {
+    result = []
+    routes.forEach(route => {
+        if (route.origin === location) {
+            result.push(route)
+        }
+    })
+    return result
+}
 
-    routes.forEach((route, index) => {
-        const listItem = document.createElement("li");
+function testRecursion(pricelist, origin, destination) {
+    let resultPaths = []; // Store all valid paths
 
-        let routeDetails = route.map(flight => `
-        <div>
-            <strong>From:</strong> ${flight.origin} → <strong>To:</strong> ${flight.routeId}
-            <br><strong>Company:</strong> ${flight.companyName} |
-            <strong>Price:</strong> ${flight.price} |
-            <strong>Travel time:<strong> ${flight.startTime} - ${flight.endTime}
-        </div>
-        `).join("<hr>");
+    // Get all valid starting travels from the origin
+    let startingTravels = testFilter(pricelist, origin);
 
-        listItem.innerHTML = `
-        <h3>ROute ${index + 1} - Total Price: ${route[route.length - 1].totalPrice}</h3>
-        ${routeDetails}
-        <button onclick="makeReservation(${JSON.stringify(route)})">Reserve</button>
-        `;
+    startingTravels.forEach(route => {
+        // Recursively find routes leading to the destination
+        let path = testRecursionHelper(pricelist, route, destination);
 
-        routeList.appendChild(listItem);
+        if (path.length > 0) {
+            resultPaths.push(path);
+        }
     });
-}*/
 
+    console.log("Test found routes:", resultPaths);
+    return resultPaths;
+}
+function testRecursionHelper(pricelist, current, destination, path=[], allPaths=[]) {
+    path.push(current); // Add current origin to path
+
+    if (current.destination === destination) {
+        allPaths.push([...path]); // If destination is reached, store path
+    } else {
+        let next = testFilter(pricelist, current.destination)
+        
+        next.forEach(travel => {
+            if (!path.includes(travel)) {
+                testRecursionHelper(pricelist, travel, destination, path, allPaths);
+            }
+        })
+    }
+
+    path.pop(); // Backtrack to explore other routes
+    console.log('allpaths', allPaths)
+    return allPaths;
+}
+console.log('test', testRecursion(tempList, 'earth', 'jupiter'))
 function displayRoutes(routes) {
     const routeList = document.getElementById("routeList");
     const routesSection = document.getElementById("routes");
@@ -340,14 +367,6 @@ async function makeReservation(route) {
 
     // Calculate total price & travel time
     const totalPrice = route.reduce((sum, flight) => sum + flight.price, 0);
-    //const totalTravelTimeMs = route.reduce((sum, flight) => sum + (new Date(flight.endTime) - new Date(flight.startTime)), 0);
-
-    // ✅ Convert totalTravelTime to ISO 8601 Duration format (PTxHxMxS)
-    /*const totalSeconds = Math.floor(totalTravelTimeMs / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    const isoDuration = `PT${hours}H${minutes}M${seconds}S`;*/
     const totalTravelTimeMs = route.reduce((sum, flight) => sum + (new Date(flight.endTime) - new Date(flight.startTime)), 0);
     const totalTravelTime = new Date(totalTravelTimeMs).toISOString().substr(11, 8); //HH:mm:ss
 
@@ -393,7 +412,7 @@ async function linkRoutesToReservation(reservationId, route) {
         const priceReservationData = {
             reservationId,
             priceId: flight.id
-             // Ensure this matches the `PriceList` ID
+            // Ensure this matches the `PriceList` ID
         };
 
         console.log("📤 Linking route to reservation:", priceReservationData);
@@ -423,27 +442,13 @@ async function linkRoutesToReservation(reservationId, route) {
 document.getElementById("companyFilter").addEventListener("change", applyFilters);
 document.getElementById("sortBy").addEventListener("change", applyFilters);
 
-async function getCompanyList() {
-    try {
-        const pricelist = await getLatestPriceList();
-        const uniqueCompanies = [...new Set(pricelist.map(route => route.companyName))].filter(Boolean);
-
-        populateDropdown(document.getElementById("companyFilter"), ["All", ...uniqueCompanies]);
-
-    } catch (error) {
-        console.error("Error fetching company list:", error);
-    }
-}
-
-document.addEventListener("DOMContentLoaded", async function () {
-    await getCompanyList();  // Fetch companies dynamically
-});
-
 function applyFilters() {
-    const company = document.getElementById("companyFilter").value;
+    const companyFilter = document.getElementById("companyFilter");
+    const company = companyFilter.value;
     const sortBy = document.getElementById("sortBy").value;
 
     let filteredRoutes = [...currentDisplayedRoutes]; // Clone array to avoid modifying original data
+    console.log('routes', currentDisplayedRoutes);
 
     // Apply Company Filter
     if (company && company !== "All") {
@@ -451,6 +456,7 @@ function applyFilters() {
             route.some(flight => flight.companyName === company)
         );
     }
+    console.log('filtered', filteredRoutes);
 
     // Apply Sorting
     if (sortBy === "price") {
@@ -469,32 +475,32 @@ function applyFilters() {
             b.reduce((sum, flight) => sum + (new Date(flight.endTime) - new Date(flight.startTime)), 0)
         );
     }
-
+    updateCompanyFilter(filteredRoutes);
     displayRoutes(filteredRoutes);
 }
 
+function updateCompanyFilter() {
+    const companyFilter = document.getElementById("companyFilter");
 
+    // Get all unique company names from all available routes
+    const allCompanies = [...new Set(currentDisplayedRoutes.flatMap(route => route.map(flight => flight.companyName)))];
 
-document.getElementById("findRoutes").addEventListener("click", async function () {
-    const origin = document.getElementById("origin").value;
-    const destination = document.getElementById("destination").value;
+    // Preserve the currently selected company if possible
+    const selectedCompany = companyFilter.value;
 
-    if (!origin || !destination) {
-        alert("Please select both origin and destination");
-        return;
+    // Keep "All" as the default option
+    companyFilter.innerHTML = '<option value="All">All</option>';
+
+    // Populate the dropdown with all companies
+    allCompanies.forEach(company => {
+        const option = document.createElement("option");
+        option.value = company;
+        option.textContent = company;
+        companyFilter.appendChild(option);
+    });
+
+    // Restore previously selected company (if still available)
+    if (allCompanies.includes(selectedCompany)) {
+        companyFilter.value = selectedCompany;
     }
-
-    try {
-        // Fetch available travel routes
-        const pricelist = await getLatestPriceList();
-
-        // Find multi-leg routes
-        const possibleRoutes = findMultiLegRoutes(pricelist, origin, destination, new Date());
-
-        currentDisplayedRoutes = possibleRoutes; // Store the results globally for filtering/sorting
-        displayRoutes(possibleRoutes);
-    } catch (error) {
-        console.error("Error fetching routes", error);
-        alert("Failed to fetch travel routes");
-    }
-});
+}
