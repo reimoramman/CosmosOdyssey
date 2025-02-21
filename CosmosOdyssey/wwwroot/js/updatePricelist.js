@@ -78,6 +78,7 @@ async function saveJsonToDb(currentPriceList) {
 async function getLatestPriceList() {
     console.log('ONLY CALL THIS ONCE!')
     let currentPriceList = await getHistoricPriceList();
+    console.log("CurrentPricelist", currentPriceList);
     if (currentPriceList.length === 0) {
         newPriceList = await getNewPriceList();
         currentPriceList = await saveJsonToDb(newPriceList)
@@ -85,10 +86,6 @@ async function getLatestPriceList() {
     }
     return currentPriceList;
 }
-
-
-
-
 
 // Function to populate dropdowns
 function populateDropdown(selectElement, options, default_value = '-- Select --') {
@@ -104,7 +101,6 @@ function populateDropdown(selectElement, options, default_value = '-- Select --'
     // Ensure, that the selected value does not get deselected
     selectElement.value = selectedValue;
 }
-
 
 // Populate dropdown
 document.addEventListener("DOMContentLoaded", async function () {
@@ -158,8 +154,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         try {
             //Find paths from origin to destination
+            console.log("PriceList", pricelist);
             const possibleRoutes = findMultiLegRoutes(pricelist, origin, destination, new Date());
-
+            console.log("HEEEELP", possibleRoutes);
             currentDisplayedRoutes = possibleRoutes; // Store the results globally for filtering/sorting
             displayRoutes(possibleRoutes);
         } catch (error) {
@@ -170,9 +167,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 })
 
 // Filter routes where depart time is adter TIME and route starts at CURRENTLOCATION
-function findLaterTravels(currentLocation, pricelist, time) {
+function findLaterTravels(pricelist, currentLocation, time) {
     let suitableRoutes = [];
     // Iterate through the price list and find valid routes from currentLocation
+    console.log(pricelist);
     pricelist.forEach(route => {
         if (new Date(route.startTime) > time && route.origin == currentLocation) {
             suitableRoutes.push(route);
@@ -182,130 +180,36 @@ function findLaterTravels(currentLocation, pricelist, time) {
     return suitableRoutes
 }
 
-/*function findMultiLegRoutes(pricelist, origin, destination, time) {
-    const startingTravels = findLaterTravels(origin, pricelist, time);
-    startingTravels.forEach(route => {
-        findMultiLegRoutesHelper(pricelist, route, destination);
-    })
-    return resultPaths;
-}*/
-
-
 // Return valid routes, including stopovers
 function findMultiLegRoutes(pricelist, origin, destination, time) {
     let resultPaths = []; // Store all valid paths
 
     // Get all valid starting travels from the origin
-    let startingTravels = findLaterTravels(origin, pricelist, time);
+    let startingTravels = findLaterTravels(pricelist, origin, time);
 
     startingTravels.forEach(route => {
-        // Recursively find routes leading to the destination
-        let path = findMultiLegRoutesHelper(pricelist, route, destination, []);
-
-        if (path.length > 0) {
-            resultPaths.push(path);
-        }
+        let allPaths = [];
+        findMultiLegRoutesHelper(pricelist, route, destination, [], allPaths);
+        resultPaths.push(...allPaths); // Store found paths
     });
 
     console.log("Final Found Routes:", resultPaths);
     return resultPaths;
 }
 
-/*function findMultiLegRoutesHelper(pricelist, current, destination) {
-    let resultPaths = [];
-    if (current.destination == destination) {
-        console.log(current)
-        return current
-    }
-    startingTravels = findLaterTravels(current, pricelist, current.endTime)
-    startingTravels.forEach(route => {
-        findMultiLegRoutesHelper(pricelist, route, destination, route.endTime)
-    })
-}*/
-// Build paths
-function findMultiLegRoutesHelper(pricelist, current, destination, path) {
-    // Add cuurent route to path
-    path.push(current);
+function findMultiLegRoutesHelper(pricelist, current, destination, path, allPaths) {
+    let newPath = [...path, current]; // Copy path to avoid shared mutation
 
     if (current.destination === destination) {
-        // Retrurn completed path
-        return [...path];
-    }
-
-    // Find the next possible flights from the current location
-    let nextTravels = findLaterTravels(current.destination, pricelist, current.endTime);
-    let validPaths = [];
-
-    // Recursively explore possible routes
-    nextTravels.forEach(nextRoute => {
-        let newPath = findMultiLegRoutesHelper(pricelist, nextRoute, destination, [...path]);
-
-        if (newPath.length > 0) {
-            validPaths.push(newPath);
-        }
-    });
-
-    // Return first valid path
-    return validPaths.length > 0 ? validPaths[0] : [];
-}
-
-let tempList = [
-    { 'origin': 'earth', 'destination': 'mars' },
-    { 'origin': 'mars', 'destination': 'neptune' },
-    { 'origin': 'neptune', 'destination': 'venus' },
-    { 'origin': 'neptune', 'destination': 'jupiter' },
-    { 'origin': 'venus', 'destination': 'pluto' },
-    { 'origin': 'earth', 'destination': 'jupiter' },
-    { 'origin': 'mars', 'destination': 'jupiter' }
-]
-function testFilter(routes, location) {
-    result = []
-    routes.forEach(route => {
-        if (route.origin === location) {
-            result.push(route)
-        }
-    })
-    return result
-}
-
-function testRecursion(pricelist, origin, destination) {
-    let resultPaths = []; // Store all valid paths
-
-    // Get all valid starting travels from the origin
-    let startingTravels = testFilter(pricelist, origin);
-
-    startingTravels.forEach(route => {
-        // Recursively find routes leading to the destination
-        let path = testRecursionHelper(pricelist, route, destination);
-
-        if (path.length > 0) {
-            resultPaths.push(path);
-        }
-    });
-
-    console.log("Test found routes:", resultPaths);
-    return resultPaths;
-}
-function testRecursionHelper(pricelist, current, destination, path=[], allPaths=[]) {
-    path.push(current); // Add current origin to path
-
-    if (current.destination === destination) {
-        allPaths.push([...path]); // If destination is reached, store path
+        allPaths.push(newPath); // Store completed path
     } else {
-        let next = testFilter(pricelist, current.destination)
-        
-        next.forEach(travel => {
-            if (!path.includes(travel)) {
-                testRecursionHelper(pricelist, travel, destination, path, allPaths);
-            }
-        })
+        let nextRoutes = findLaterTravels(pricelist, current.destination, new Date(current.endTime));
+        nextRoutes.forEach(travel => {
+            findMultiLegRoutesHelper(pricelist, travel, destination, newPath, allPaths);
+        });
     }
-
-    path.pop(); // Backtrack to explore other routes
-    console.log('allpaths', allPaths)
-    return allPaths;
 }
-console.log('test', testRecursion(tempList, 'earth', 'jupiter'))
+
 function displayRoutes(routes) {
     const routeList = document.getElementById("routeList");
     const routesSection = document.getElementById("routes");
@@ -354,8 +258,6 @@ function displayRoutes(routes) {
     });
 }
 
-
-// TODO: Finish the function
 async function makeReservation(route) {
     const firstName = prompt("Enter your first name:");
     const lastName = prompt("Enter your last name:");
@@ -403,8 +305,6 @@ async function makeReservation(route) {
         alert("Reservation failed. Please try again.");
     }
 }
-
-
 
 
 async function linkRoutesToReservation(reservationId, route) {
