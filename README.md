@@ -1,49 +1,90 @@
 Setup Guide
 
-This project was made using Visual Studio 2022 and SQL Server Managment Studio 20
-https://visualstudio.microsoft.com/downloads/
+This project was developed using Visual Studio 2022 and SQL Server Management Studio 20.
+1️) Install Required Software
 
-https://www.microsoft.com/en-us/sql-server/sql-server-downloads
+    Download Visual Studio 2022
+    Download SQL Server Management Studio
 
-Open Visual Studio and copy the project to Visual Studio
+2️) Open the Project in Visual Studio
 
-![image](https://github.com/user-attachments/assets/0ad07cb1-a5ea-4b9f-a75d-6c616c6adc4e)
+    Open Visual Studio.
+    Clone or copy the project into Visual Studio.
 
+![image](https://github.com/user-attachments/assets/a3203996-b024-4c3e-ac17-13eee8c7b0de)
 
-In the file updatePriselist.js at the very top of the file make sure the URL is correct for when you launc the projecct 
+3️) Update the API URL in updatePricelist.js
 
-![image](https://github.com/user-attachments/assets/0daac02a-e78f-4bed-85de-6e7d69f07517)
+    Open the file updatePricelist.js.
+    At the very top, make sure the API URL is set correctly for your project.
 
-Under the Program.cs file change the name of the server to the one one shall be using 
+![image](https://github.com/user-attachments/assets/ba6b945c-c462-4bae-abde-52f28ceaee5e)
 
-![image](https://github.com/user-attachments/assets/0f740529-0460-4cbe-a0a5-5d241b603a6b)
+4️) Configure the Database Connection
 
-To find the name of ones server open SQL Server Managment Studio and you will be greeted with a popup where you can see the name of ones server
+    Open Program.cs.
+    Locate the database connection string.
+    Change the server name to match the one you are using.
 
-![image](https://github.com/user-attachments/assets/03cc3343-6776-48aa-ba3a-23b57e00aad1)
+![image](https://github.com/user-attachments/assets/36b0af3d-f770-4b3c-8080-04df2d74e557)
 
-Once the changes are made you can run the project in Visual Studio. It will oepen up the Swagger page for the API-s where one
-can see and use the API-s to add/change/delete reservations and more. But to see the webpage one needs to modify the URL of 
-the webpage that was opened. One can simply edit the URL but it is more convenient to open another tab and copy the url there with
-the change of deleting the swagger part from the URL.
+! How to Find Your SQL Server Name
+
+    Open SQL Server Management Studio (SSMS).
+    A popup will appear showing your server name.
+
+![image](https://github.com/user-attachments/assets/11980440-6b7f-4471-9003-919f4ed033cf)
+
+5️) Run the Project in Visual Studio
+
+    Once all changes are made, run the project in Visual Studio.
+    This will open the Swagger API documentation in your browser.
+    Swagger lets you test the API, allowing you to add, modify, or delete reservations.
+
+Example URL for Swagger API:
+
 https://localhost:7066/swagger/index.html
-https://localhost:7066/index.html
 
-In the actual webpage one choose Origin and Destination 
+6️) Open the Web Application
 
-![image](https://github.com/user-attachments/assets/9b3818f4-cacb-460c-975f-819b5138f8b5)
+    The Swagger page does not show the main website.
+    To access the web application, modify the URL:
+        Remove /swagger/index.html from the URL.
+        Final URL:
 
-Find the route one likes and then reserve the flight. One can also use the filters to help find the perfect route
+        https://localhost:7066/index.html
 
-![image](https://github.com/user-attachments/assets/c7104ad2-d5ca-4df6-b584-5a5b336dbe5c)
+7️) Using the Web Application
+➡ Select Origin & Destination
 
-To see the reservation go back to the Swagger page and execute the GET Reservation API
+    Choose the origin and destination for your trip.
 
-![image](https://github.com/user-attachments/assets/185c53b3-5006-4507-a293-49fbb35d8aa6)
+![image](https://github.com/user-attachments/assets/dbf80d7d-4f49-41ec-ac57-bafda7dae12f)
 
-![image](https://github.com/user-attachments/assets/2f5883ef-931f-447b-8623-0ebc89e0f5c0)
+➡ Find and Reserve a Route
+
+    Browse available routes and reserve your flight.
+    Use filters to find the best option.
+
+![6fa46ca5-c54f-486d-9234-9a98042bc570](https://github.com/user-attachments/assets/e851326b-f9c7-487a-83d2-5a12e9fb4696)
+
+8️) View Your Reservation
+
+    Go back to the Swagger page.
+    Execute the GET Reservation API to see your saved reservation.
+
+![185c53b3-5006-4507-a293-49fbb35d8aa6](https://github.com/user-attachments/assets/a84eca8c-7172-4485-879d-b8fce516ca19)
+
+![2f5883ef-931f-447b-8623-0ebc89e0f5c0](https://github.com/user-attachments/assets/d483241b-31e3-49b3-acdf-b2fcf3524019)
+
+9) View Your Flights
+
+    In the Swagger page.
+    Execute the GET PriceReservation API to see your saved reservation.
+    To find specific Reservation flights
+    Copy Reservation Id and Use byReservation API
+![image](https://github.com/user-attachments/assets/06a91871-2a31-4162-82d0-089ba7580f35)
+
+![image](https://github.com/user-attachments/assets/09211fab-6d92-4854-aa66-28c3f06d50e1)
 
 
-To see the flights copy or memorice the Id of the reservation and use the GET PriceReservation API
-![image](https://github.com/user-attachments/assets/138dca61-48fd-4e38-8680-2b66e426292a)
-![image](https://github.com/user-attachments/assets/df447af5-2fea-4f42-a388-6a97e1bdc150)
