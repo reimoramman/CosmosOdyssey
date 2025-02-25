@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PriceLists.API.Models.Entities;
 using Routes.API.Data;
@@ -74,7 +75,7 @@ namespace CosmosOdyssey.Controllers
         [HttpPost]
         public async Task<IActionResult> AddPriceList(PriceList pricelist)
         {
-            pricelist.Id = Guid.NewGuid();
+            //pricelist.Id = Guid.NewGuid();
             await routesDbContext.PriceList.AddAsync(pricelist);
             await routesDbContext.SaveChangesAsync();
             return CreatedAtAction(nameof(GetPriceListById), new { id = pricelist.Id }, pricelist);
@@ -117,6 +118,25 @@ namespace CosmosOdyssey.Controllers
             await routesDbContext.SaveChangesAsync();
 
             return Ok();
+        }
+
+
+        [HttpDelete]
+        [Route("Keep15")]
+        public async Task<string> DeleteOldPriceLists([FromRoute] string Keep15)
+        {
+            string response = string.Empty;
+            SqlCommand cmd = new SqlCommand("DELETE FROM PriceList WHERE ValidUntil NOT IN (SELECT DISTINCT TOP 15 ValidUntil FROM PriceList ORDER BY ValidUntil)");
+            int i = cmd.ExecuteNonQuery();
+            if  (i > 0)
+            {
+                response = "Database trimmed";
+            }
+            else
+            {
+                response = "Notihing happend";
+            }
+            return response;
         }
     }
 }

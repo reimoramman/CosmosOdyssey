@@ -60,6 +60,7 @@ async function saveJsonToDb(currentPriceList) {
             let price = provider.price
 
             let priceData = {
+                "id": provider.id,
                 "validUntil": validUntil,
                 "price": price,
                 "companyName": companyName,
@@ -83,7 +84,13 @@ async function getLatestPriceList() {
         newPriceList = await getNewPriceList();
         currentPriceList = await saveJsonToDb(newPriceList)
     }
+    keep15PriceList();
     return currentPriceList;
+}
+
+async function keep15PriceList() {
+    const response = await fetch(`${APIURL}/pricelist/DeleteOldPriceLists`);
+    tempData = await response.json();
 }
 
 // Function to populate dropdowns
@@ -315,9 +322,10 @@ async function makeReservation(route) {
 
 async function linkRoutesToReservation(reservationId, route) {
     for (const flight of route) {
+        console.log("FLIGHT", flight);
         const priceReservationData = {
-            reservationId,
-            priceId: flight.id
+            reservationId: reservationId,
+            priceId: flight.id,
             // Ensure this matches the `PriceList` ID
         };
 

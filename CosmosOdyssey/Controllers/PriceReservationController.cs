@@ -87,7 +87,7 @@ namespace CosmosOdyssey.Controllers
         }
 
         [HttpDelete]
-        [Route("{id.Guid}")]
+        [Route("{id:Guid}")]
         public async Task<IActionResult> DeletePriceReservation([FromRoute] Guid id)
         {
             var existingPriceReservation = await routesDbContext.PriceReservation.FindAsync(id);
