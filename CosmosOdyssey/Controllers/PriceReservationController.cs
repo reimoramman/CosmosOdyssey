@@ -26,7 +26,7 @@ namespace CosmosOdyssey.Controllers
         public async Task<IActionResult> GetPriceReservationsByReservationId([FromRoute] Guid reservationId)
         {
             var priceReservations = await routesDbContext.PriceReservation
-                .Where(pr => pr.ReservationId == reservationId) // 🔥 Filter by ReservationId
+                .Where(pr => pr.ReservationId == reservationId)
                 .ToListAsync();
 
             if (!priceReservations.Any())
@@ -48,7 +48,6 @@ namespace CosmosOdyssey.Controllers
 
             priceReservation.Id = Guid.NewGuid();
 
-            // Ensure Reservation & PriceList exist
             var reservationExists = await routesDbContext.Reservations.AnyAsync(r => r.Id == priceReservation.ReservationId);
             var priceExists = await routesDbContext.PriceList.AnyAsync(p => p.Id == priceReservation.PriceId);
 
