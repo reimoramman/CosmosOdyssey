@@ -11,26 +11,30 @@ This project was developed using Visual Studio 2022 and SQL Server Management St
     Open Visual Studio.
     Clone or copy the project into Visual Studio.
 
-image
+![image](https://github.com/user-attachments/assets/a3203996-b024-4c3e-ac17-13eee8c7b0de)
+
 3️) Update the API URL in updatePricelist.js
 
     Open the file updatePricelist.js.
     At the very top, make sure the API URL is set correctly for your project.
 
-image
+![image](https://github.com/user-attachments/assets/ba6b945c-c462-4bae-abde-52f28ceaee5e)
+
 4️) Configure the Database Connection
 
     Open Program.cs.
     Locate the database connection string.
     Change the server name to match the one you are using.
 
-image
-🔍 How to Find Your SQL Server Name
+![image](https://github.com/user-attachments/assets/36b0af3d-f770-4b3c-8080-04df2d74e557)
+
+! How to Find Your SQL Server Name
 
     Open SQL Server Management Studio (SSMS).
     A popup will appear showing your server name.
 
-image
+![image](https://github.com/user-attachments/assets/11980440-6b7f-4471-9003-919f4ed033cf)
+
 5️) Run the Project in Visual Studio
 
     Once all changes are made, run the project in Visual Studio.
@@ -55,17 +59,21 @@ https://localhost:7066/swagger/index.html
 
     Choose the origin and destination for your trip.
 
-image
+![image](https://github.com/user-attachments/assets/dbf80d7d-4f49-41ec-ac57-bafda7dae12f)
+
 ➡ Find and Reserve a Route
 
     Browse available routes and reserve your flight.
     Use filters to find the best option.
 
-image
+![6fa46ca5-c54f-486d-9234-9a98042bc570](https://github.com/user-attachments/assets/e851326b-f9c7-487a-83d2-5a12e9fb4696)
+
 8️) View Your Reservation
 
     Go back to the Swagger page.
     Execute the GET Reservation API to see your saved reservation.
 
-image
-image
+![185c53b3-5006-4507-a293-49fbb35d8aa6](https://github.com/user-attachments/assets/a84eca8c-7172-4485-879d-b8fce516ca19)
+
+![2f5883ef-931f-447b-8623-0ebc89e0f5c0](https://github.com/user-attachments/assets/d483241b-31e3-49b3-acdf-b2fcf3524019)
+
