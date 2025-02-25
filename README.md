@@ -1,90 +1,111 @@
 Setup Guide
 
-This project was developed using Visual Studio 2022 and SQL Server Management Studio 20.
-1️) Install Required Software
+This project was developed using Visual Studio 2022 and SQL Server Management Studio (SSMS).
 
-    Download Visual Studio 2022
-    Download SQL Server Management Studio
+Step 1: Install Required Software
 
-2️) Open the Project in Visual Studio
+Download & Install:
+
+    Visual Studio 2022
+    SQL Server Management Studio (SSMS)
+
+Step 2: Open the Project in Visual Studio
 
     Open Visual Studio.
     Clone or copy the project into Visual Studio.
 
-![image](https://github.com/user-attachments/assets/a3203996-b024-4c3e-ac17-13eee8c7b0de)
+![a3203996-b024-4c3e-ac17-13eee8c7b0de](https://github.com/user-attachments/assets/be46f10f-0f26-4d7f-95d5-dc50f06705aa)
 
-3️) Update the API URL in updatePricelist.js
+Step 3: Update the API URL in updatePricelist.js
 
     Open the file updatePricelist.js.
-    At the very top, make sure the API URL is set correctly for your project.
+    At the very top, ensure the API URL is correct for your project.
 
-![image](https://github.com/user-attachments/assets/ba6b945c-c462-4bae-abde-52f28ceaee5e)
+![ba6b945c-c462-4bae-abde-52f28ceaee5e](https://github.com/user-attachments/assets/9acb473b-268f-4146-af2b-0e0385de0c76)
 
-4️) Configure the Database Connection
+Step 4: Configure the Database Connection
 
     Open Program.cs.
     Locate the database connection string.
-    Change the server name to match the one you are using.
+    Change the server name to match your SQL Server.
 
-![image](https://github.com/user-attachments/assets/36b0af3d-f770-4b3c-8080-04df2d74e557)
+![36b0af3d-f770-4b3c-8080-04df2d74e557](https://github.com/user-attachments/assets/ee797872-f05b-488c-8a8d-06fadc1e29f4)
 
-! How to Find Your SQL Server Name
+How to Find Your SQL Server Name:
 
     Open SQL Server Management Studio (SSMS).
     A popup will appear showing your server name.
 
-![image](https://github.com/user-attachments/assets/11980440-6b7f-4471-9003-919f4ed033cf)
+![11980440-6b7f-4471-9003-919f4ed033cf](https://github.com/user-attachments/assets/7756f4d3-71d3-45d3-8b44-9f3e6b66d5dc)
 
-5️) Run the Project in Visual Studio
+Step 5: Apply Database Migrations
 
-    Once all changes are made, run the project in Visual Studio.
-    This will open the Swagger API documentation in your browser.
-    Swagger lets you test the API, allowing you to add, modify, or delete reservations.
+    Open NuGet Package Manager Console in Visual Studio:
+    Tools → NuGet Package Manager → Package Manager Console
+    Run the following command to apply the database migration:
+
+    Update-Database
+
+![cf17e194-b3e7-4f74-868e-1c9224db2a40](https://github.com/user-attachments/assets/75100442-0658-4176-a898-e30047aa3dba)
+
+![28e1329b-2482-4845-b9bd-893714b8243d](https://github.com/user-attachments/assets/7f8ef1af-e300-461d-8c37-26bed6ed4f19)
+
+Step 6: Run the Project in Visual Studio
+
+    Click Run in Visual Studio.
+    This will open Swagger API documentation in your browser.
+    Swagger allows you to test the API, including:
+        Adding, modifying, or deleting reservations.
+        Viewing available travel routes.
 
 Example URL for Swagger API:
 
 https://localhost:7066/swagger/index.html
 
-6️) Open the Web Application
+Step 7: Open the Web Application
 
-    The Swagger page does not show the main website.
-    To access the web application, modify the URL:
-        Remove /swagger/index.html from the URL.
-        Final URL:
+    Swagger only shows API documentation, not the main website.
+    To open the web application, modify the URL:
+        Remove /swagger from the URL.
+        New URL:
 
-        https://localhost:7066/index.html
+    https://localhost:7066/index.html
 
-7️) Using the Web Application
-➡ Select Origin & Destination
+Step 8: Using the Web Application
 
-    Choose the origin and destination for your trip.
+➡ Select Your Travel Route
 
-![image](https://github.com/user-attachments/assets/dbf80d7d-4f49-41ec-ac57-bafda7dae12f)
+    Choose an Origin and Destination.
+    Click Find Routes.
 
-➡ Find and Reserve a Route
+![dbf80d7d-4f49-41ec-ac57-bafda7dae12f](https://github.com/user-attachments/assets/719906d5-1260-4f55-b725-2e0b09bbce16)
 
-    Browse available routes and reserve your flight.
+➡ Find & Reserve a Route
+
+    Browse available routes.
+    Click Reserve to book a flight.
     Use filters to find the best option.
 
-![6fa46ca5-c54f-486d-9234-9a98042bc570](https://github.com/user-attachments/assets/e851326b-f9c7-487a-83d2-5a12e9fb4696)
+![e851326b-f9c7-487a-83d2-5a12e9fb4696](https://github.com/user-attachments/assets/ae0ceaab-dc43-464a-b240-c277dc8ab2bf)
 
-8️) View Your Reservation
+Step 9: View Your Reservations
 
-    Go back to the Swagger page.
-    Execute the GET Reservation API to see your saved reservation.
+    Open the Swagger page.
+    Execute the GET Reservation API to view your saved reservations.
 
-![185c53b3-5006-4507-a293-49fbb35d8aa6](https://github.com/user-attachments/assets/a84eca8c-7172-4485-879d-b8fce516ca19)
+![a84eca8c-7172-4485-879d-b8fce516ca19](https://github.com/user-attachments/assets/49112861-7932-44c8-aefb-d6490ad83af0)
 
-![2f5883ef-931f-447b-8623-0ebc89e0f5c0](https://github.com/user-attachments/assets/d483241b-31e3-49b3-acdf-b2fcf3524019)
+![d483241b-31e3-49b3-acdf-b2fcf3524019](https://github.com/user-attachments/assets/f53309e4-9632-4f41-b7f2-8e3e0b82d96f)
 
-9) View Your Flights
+Step 10: View Your Flights (Reservations & Routes)
 
-    In the Swagger page.
-    Execute the GET PriceReservation API to see your saved reservation.
-    To find specific Reservation flights
-    Copy Reservation Id and Use byReservation API
-![image](https://github.com/user-attachments/assets/06a91871-2a31-4162-82d0-089ba7580f35)
+    Open the Swagger page.
+    Execute the GET PriceReservation API to see your reserved flights.
+    Find a specific reservation:
+        Copy the Reservation ID.
+        Use the byReservation API to fetch flights for that reservation.
 
-![image](https://github.com/user-attachments/assets/09211fab-6d92-4854-aa66-28c3f06d50e1)
+![06a91871-2a31-4162-82d0-089ba7580f35](https://github.com/user-attachments/assets/c934ce93-6b52-45c8-bde9-dfb6701439d3)
 
+![09211fab-6d92-4854-aa66-28c3f06d50e1](https://github.com/user-attachments/assets/bcd42539-ec51-41e9-9add-5816d9881c5d)
 
