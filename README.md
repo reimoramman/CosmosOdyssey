@@ -77,3 +77,14 @@ https://localhost:7066/swagger/index.html
 
 ![2f5883ef-931f-447b-8623-0ebc89e0f5c0](https://github.com/user-attachments/assets/d483241b-31e3-49b3-acdf-b2fcf3524019)
 
+89) View Your Flights
+
+    In the Swagger page.
+    Execute the GET PriceReservation API to see your saved reservation.
+    To find specific Reservation flights
+    Copy Reservation Id and Use byReservation API
+![image](https://github.com/user-attachments/assets/06a91871-2a31-4162-82d0-089ba7580f35)
+
+![image](https://github.com/user-attachments/assets/09211fab-6d92-4854-aa66-28c3f06d50e1)
+
+
