@@ -22,43 +22,47 @@ namespace CosmosOdyssey.Controllers
             return Ok(await routesDbContext.PriceReservation.ToListAsync());
         }
 
-        [HttpGet]
-        [Route("{id:Guid}")]
-        public async Task<IActionResult> GetPriceReservationById([FromRoute] Guid id)
+        [HttpGet("byReservation/{reservationId:Guid}")]
+        public async Task<IActionResult> GetPriceReservationsByReservationId([FromRoute] Guid reservationId)
         {
-            var priceReservation = await routesDbContext.PriceReservation.FindAsync(id);
+            var priceReservations = await routesDbContext.PriceReservation
+                .Where(pr => pr.ReservationId == reservationId) // 🔥 Filter by ReservationId
+                .ToListAsync();
 
-            if (priceReservation == null)
+            if (!priceReservations.Any())
             {
-                return NotFound();
+                return NotFound($"No price reservations found for reservation ID: {reservationId}");
             }
 
-            return Ok(priceReservation);
+            return Ok(priceReservations);
         }
 
+
         [HttpPost]
-        public async Task<IActionResult> AddPriceReservation(PriceReservation priceReservation)
+        public async Task<IActionResult> AddPriceReservation([FromBody] PriceReservation priceReservation)
         {
+            if (priceReservation == null)
+            {
+                return BadRequest("Invalid data.");
+            }
+
             priceReservation.Id = Guid.NewGuid();
 
+            // Ensure Reservation & PriceList exist
             var reservationExists = await routesDbContext.Reservations.AnyAsync(r => r.Id == priceReservation.ReservationId);
             var priceExists = await routesDbContext.PriceList.AnyAsync(p => p.Id == priceReservation.PriceId);
 
-            if (!reservationExists)
+            if (!reservationExists || !priceExists)
             {
-                return BadRequest($"Invalid ReservationId: {priceReservation.ReservationId}");
-            }
-
-            if (!priceExists)
-            {
-                return BadRequest($"Invalid PriceId: {priceReservation.PriceId}");
+                return BadRequest("Invalid ReservationId or PriceId.");
             }
 
             await routesDbContext.PriceReservation.AddAsync(priceReservation);
             await routesDbContext.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetPriceReservationById), new { id = priceReservation.Id }, priceReservation);
+            return CreatedAtAction(nameof(GetPriceReservationsByReservationId), new { reservationId = priceReservation.ReservationId }, priceReservation);
         }
+
 
         [HttpPut]
         [Route("{id:Guid}")]
