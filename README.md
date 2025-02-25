@@ -13,6 +13,7 @@ Step 2: Open the Project in Visual Studio
 
     Open Visual Studio.
     Clone or copy the project into Visual Studio.
+    https://github.com/reimoramman/CosmosOdyssey.git
 
 ![a3203996-b024-4c3e-ac17-13eee8c7b0de](https://github.com/user-attachments/assets/be46f10f-0f26-4d7f-95d5-dc50f06705aa)
 
